@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Catálogo Demo</title>
+  <style>
+    /* Estilo limpio y responsivo similar al diseño que mostraste */
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    header { background: #222; color: #fff; padding: 10px; }
+    header nav ul { list-style: none; display: flex; gap: 15px; }
+    header nav a { color: #fff; text-decoration: none; }
+    .products { display: grid; grid-template-columns: repeat(auto-fill,minmax(200px,1fr)); gap: 20px; padding: 20px; }
+    .card { border: 1px solid #ddd; padding: 15px; border-radius: 6px; }
+    .thumbs img { width: 40px; cursor: pointer; margin-right: 5px; }
+    .stars { color: gold; }
+    #cartModal { position: fixed; top: 50px; right: 20px; background: #fff; padding: 15px; border: 1px solid #333; display: none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <nav><ul>
+    <li><a href="#estudio">Micrófonos de estudio</a></li>
+    <li><a href="#solapa">Micrófonos de solapa (lavalier)</a></li>
+    <li><a href="#audifonos">Audífonos</a></li>
+    <li><a href="#interfaces">Interfaces / Mixers</a></li>
+  </ul></nav>
+  <button onclick="toggleCart()">🛒 Ver cesta</button>
+</header>
+
+<section id="estudio" class="products">
+  <!-- Producto 1 -->
+  <div class="card" data-name="FIFINE K669B" data-price="4.0">
+    <img class="main" src="https://via.placeholder.com/300x200" alt="FIFINE K669B">
+    <h3>FIFINE K669B</h3>
+    <div class="stars">★★★★☆</div>
+    <div class="reviews">1,049 reviews ×1000 =&gt; 1 049 000</div>
+    <p>$4.00</p>
+    <div class="thumbs">
+      <img src="https://via.placeholder.com/40x40" onclick="changeImage(this)">
+      <img src="https://via.placeholder.com/40x40">
+      <img src="https://via.placeholder.com/40x40">
+    </div>
+    <button onclick="addToCart(this)">Agregar al carrito</button>
+  </div>
+  <!-- Producto 2 -->
+  <div class="card" data-name="MAONO AU‑A04" data-price="97.98">
+    <img class="main" src="https://via.placeholder.com/300x200" alt="MAONO AU-A04">
+    <h3>MAONO AU‑A04</h3>
+    <div class="stars">★★★★☆</div>
+    <div class="reviews">14 966 reviews ×1000 =&gt; 14 966 000</div>
+    <p>$97.98</p>
+    <div class="thumbs">
+      <img src="https://via.placeholder.com/40x40" onclick="changeImage(this)">
+      <img src="https://via.placeholder.com/40x40">
+      <img src="https://via.placeholder.com/40x40">
+    </div>
+    <button onclick="addToCart(this)">Agregar al carrito</button>
+  </div>
+</section>
+
+<section id="solapa" class="products">
+  <!-- Producto 3 -->
+  <div class="card" data-name="Pack Lavalier JUDKIOM" data-price="20.00">
+    <img class="main" src="https://via.placeholder.com/300x200" alt="JUDKIOM Lavalier">
+    <h3>Pack Lavalier JUDKIOM</h3>
+    <div class="stars">★★★☆☆</div>
+    <div class="reviews">— reviews ×1000 =&gt; —</div>
+    <p>$20.00</p>
+    <div class="thumbs">
+      <img src="https://via.placeholder.com/40x40" onclick="changeImage(this)">
+      <img src="https://via.placeholder.com/40x40">
+    </div>
+    <button onclick="addToCart(this)">Agregar al carrito</button>
+  </div>
+</section>
+
+<div id="cartModal">
+  <h2>Cesta</h2>
+  <ul id="cartList"></ul>
+  <p>Total: $<span id="cartTotal">0.00</span></p>
+  <button onclick="toggleCart()">Cerrar</button>
+</div>
+
+<script>
+  let cart = [];
+  function addToCart(btn) {
+    const card = btn.closest('.card');
+    const name = card.dataset.name;
+    const price = parseFloat(card.dataset.price);
+    cart.push({name, price});
+    alert(name + ' agregado a la cesta');
+  }
+  function toggleCart(){
+    const m = document.getElementById('cartModal');
+    if(m.style.display === 'block'){ m.style.display = 'none'; }
+    else {
+      const list = document.getElementById('cartList');
+      list.innerHTML = '';
+      let total = 0;
+      cart.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item.name + ' – $' + item.price.toFixed(2);
+        list.appendChild(li);
+        total += item.price;
+      });
+      document.getElementById('cartTotal').textContent = total.toFixed(2);
+      m.style.display = 'block';
+    }
+  }
+  function changeImage(img){ img.closest('.card').querySelector('.main').src = img.src; }
+</script>
+
+</body>
+</html>
