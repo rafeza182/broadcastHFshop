@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProAudio Catálogo</title>
+    <title>Radio Pro Shop</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -46,6 +46,9 @@
             overflow: hidden;
             background-color: #334155; /* Fondo más oscuro para botones de menú */
             color: #e2e8f0; /* Texto claro */
+            padding: 0.75rem 1.5rem; /* Más padding para que sea más grande */
+            font-size: 1.125rem; /* Tailwind: text-lg */
+            font-weight: 500; /* Tailwind: font-medium */
         }
         .category-button:hover {
             background-color: #475569; /* Un poco más claro al pasar el ratón */
@@ -61,12 +64,12 @@
             background: rgba(255, 255, 255, 0.1);
             transform: scaleX(0);
             transform-origin: left;
-            animation: expand-x 0.3s forwards;
+            transition: transform 0.3s ease-in-out; /* Animación más suave */
         }
-        @keyframes expand-x {
-            to { transform: scaleX(1); }
+        .category-button:hover::before {
+            transform: scaleX(1);
         }
-
+        
         /* Contenedor de la cuadrícula de productos para scroll horizontal en móvil */
         .product-grid-container {
             overflow-x: auto;
@@ -102,6 +105,7 @@
             z-index: 1000;
             @apply bg-purple-700 text-white p-4 rounded-full shadow-lg flex items-center justify-center cursor-pointer;
             transition: transform 0.2s ease-in-out;
+            border: 2px solid white; /* Borde blanco para que resalte más */
         }
         .floating-cart-btn:hover {
             transform: scale(1.05);
@@ -113,86 +117,6 @@
         .cart-count {
             @apply absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center;
         }
-
-        /* Estilos para el modal del carrito */
-        .cart-modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7); /* Fondo más oscuro y legible */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-        }
-        .cart-modal-overlay.open {
-            opacity: 1;
-            visibility: visible;
-        }
-        .cart-modal-content {
-            @apply bg-white rounded-lg shadow-xl p-6 w-11/12 md:w-3/4 lg:w-2/5 max-h-[90vh] overflow-y-auto;
-            transform: translateY(20px);
-            transition: transform 0.3s ease-in-out;
-        }
-        .cart-modal-overlay.open .cart-modal-content {
-            transform: translateY(0);
-        }
-        .cart-item {
-            @apply flex items-center border-b border-slate-200 py-3;
-        }
-        .cart-item:last-child {
-            border-bottom: none;
-        }
-        .cart-item-image {
-            @apply w-16 h-16 object-contain rounded-md mr-4;
-        }
-        .quantity-control button {
-            @apply bg-slate-200 text-slate-800 px-2 py-1 rounded-md hover:bg-slate-300;
-        }
-
-        /* Estilos para la impresión del carrito */
-        @media print {
-            body > *:not(.cart-modal-overlay) {
-                display: none; /* Oculta todo excepto el modal del carrito */
-            }
-            .cart-modal-overlay {
-                position: static;
-                display: block;
-                width: auto;
-                height: auto;
-                background-color: white;
-                opacity: 1;
-                visibility: visible;
-                box-shadow: none;
-            }
-            .cart-modal-content {
-                width: 100%;
-                max-width: none;
-                margin: 0;
-                padding: 1rem;
-                box-shadow: none;
-                border: none;
-                transform: none;
-                overflow-y: visible;
-            }
-            .cart-modal-content .flex.justify-between.items-center.mb-4.border-b.pb-2 {
-                display: flex !important;
-            }
-            .cart-modal-content h2 {
-                text-align: left;
-                width: 100%;
-            }
-            .cart-modal-content button#closeCartModal,
-            .cart-modal-content button#clearCartBtn,
-            .cart-modal-content button#printCartBtn {
-                display: none; /* Oculta los botones de control en la impresión */
-            }
-        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -200,14 +124,16 @@
     <!-- Encabezado y Navegación -->
     <header class="bg-gray-900 shadow-md p-4 sticky top-0 z-50">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
-            <h1 class="text-3xl font-bold text-white mb-2 md:mb-0">ProAudio Catálogo</h1>
+            <h1 class="text-3xl font-bold text-white mb-2 md:mb-0 flex items-center gap-2">
+                📻 Radio Pro Shop
+            </h1>
             <nav class="flex flex-wrap justify-center md:justify-end gap-2 md:gap-4">
-                <button class="category-button px-4 py-2 rounded-lg transition duration-200" data-category="all">Todos</button>
-                <button class="category-button px-4 py-2 rounded-lg transition duration-200" data-category="Micrófonos de estudio">🎙 Micrófonos de estudio</button>
-                <button class="category-button px-4 py-2 rounded-lg transition duration-200" data-category="Micrófonos de solapa">🎤 Micrófonos de solapa</button>
-                <button class="category-button px-4 py-2 rounded-lg transition duration-200" data-category="Audífonos">🎧 Audífonos</button>
-                <button class="category-button px-4 py-2 rounded-lg transition duration-200" data-category="Interfaces / Mixers">🎚 Interfaces / Mixers</button>
-                <button class="category-button px-4 py-2 rounded-lg transition duration-200" data-category="Accesorios">⚙️ Accesorios</button>
+                <button class="category-button px-4 py-2 rounded-lg" data-category="all">Todos</button>
+                <button class="category-button px-4 py-2 rounded-lg" data-category="Micrófonos de estudio">🎙 Micrófonos de estudio</button>
+                <button class="category-button px-4 py-2 rounded-lg" data-category="Micrófonos de solapa">🎤 Micrófonos de solapa</button>
+                <button class="category-button px-4 py-2 rounded-lg" data-category="Audífonos">🎧 Audífonos</button>
+                <button class="category-button px-4 py-2 rounded-lg" data-category="Interfaces / Mixers">🎚 Interfaces / Mixers</button>
+                <button class="category-button px-4 py-2 rounded-lg" data-category="Accesorios">⚙️ Accesorios</button>
             </nav>
         </div>
     </header>
@@ -223,48 +149,17 @@
     </main>
 
     <!-- Carrito Flotante -->
-    <div id="floatingCartBtn" class="floating-cart-btn">
+    <a href="cart.html" id="floatingCartBtn" class="floating-cart-btn">
         <!-- Icono de Carrito (SVG de Phosphor Icons para buen estilo) -->
         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-cart cart-icon" viewBox="0 0 16 16">
             <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.485-.379L1.91 5H.5a.5.5 0 0 1-.5-.5M3.102 4l1.313 7h8.17l1.313-7zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
         </svg>
         <span id="cartItemCount" class="cart-count">0</span>
-    </div>
-
-    <!-- Modal del Carrito -->
-    <div id="cartModalOverlay" class="cart-modal-overlay">
-        <div class="cart-modal-content">
-            <div class="flex justify-between items-center mb-4 border-b pb-2">
-                <h2 class="text-2xl font-bold text-purple-700">Mi Carrito (Lista de Deseos)</h2>
-                <button id="closeCartModal" class="text-slate-500 hover:text-slate-800 text-3xl leading-none">&times;</button>
-            </div>
-            <div id="cartItemsList" class="max-h-60 overflow-y-auto mb-4">
-                <!-- Los elementos del carrito se renderizarán aquí -->
-                <p id="emptyCartMessage" class="text-slate-600 text-center py-4">Tu carrito está vacío.</p>
-            </div>
-            <div class="border-t pt-4">
-                <div class="flex justify-between text-lg font-medium mb-1">
-                    <span>Subtotal:</span>
-                    <span id="cartSubtotal">$0.00</span>
-                </div>
-                <div class="flex justify-between text-lg font-medium mb-2">
-                    <span>Impuesto:</span>
-                    <span id="cartTax">$0.00</span>
-                </div>
-                <div class="flex justify-between text-xl font-bold text-purple-700">
-                    <span>Total:</span>
-                    <span id="cartTotal">$0.00</span>
-                </div>
-                <button id="clearCartBtn" class="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition duration-200 mt-4 w-full">Vaciar Carrito</button>
-                <button id="printCartBtn" class="bg-slate-600 text-white px-6 py-2 rounded-lg hover:bg-slate-700 transition duration-200 mt-2 w-full">Imprimir Carrito</button>
-            </div>
-        </div>
-    </div>
-
+    </a>
 
     <!-- Pie de Página -->
     <footer class="bg-white shadow-inner p-6 mt-8 text-center text-slate-600">
-        <p>&copy; 2024 ProAudio Catálogo. Todos los derechos reservados.</p>
+        <p>&copy; 2024 Radio Pro Shop. Todos los derechos reservados.</p>
         <p>Contacto: <a href="mailto:info@proaudio.com" class="text-purple-600 hover:underline">info@proaudio.com</a></p>
         <p class="mt-2 text-sm">
             <a href="manage_products.html" class="text-slate-500 hover:underline">Gestionar Productos</a>
@@ -281,12 +176,7 @@
         let cartItems = []; // Almacenará los productos en el carrito
 
         // Variables globales para los elementos del DOM del carrito
-        let cartItemCountElem;
-        let cartItemsListElem;
-        let emptyCartMessageElem;
-        let cartSubtotalElem;
-        let cartTaxElem;
-        let cartTotalElem;
+        let cartItemCountElem; // Solo necesitamos este en esta página para el contador flotante
 
         // Productos de ejemplo (solo se usan si no hay productos guardados en localStorage)
         const sampleProducts = [
@@ -953,7 +843,7 @@
             renderProducts(filteredProducts);
         }
 
-        // --- Lógica del Carrito ---
+        // --- Lógica del Carrito (solo guardar y contador para esta página) ---
 
         // Guarda el carrito en localStorage con una fecha de expiración
         function saveCart() {
@@ -964,7 +854,7 @@
             };
             localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(dataToStore));
             console.log('Carrito guardado:', dataToStore); // DEBUG: Verificar lo que se guarda
-            updateCartUI(); // Actualiza la UI después de guardar
+            updateCartItemCount(); // Solo actualiza el contador en esta página
         }
 
         // Carga el carrito de localStorage y verifica la expiración
@@ -995,7 +885,7 @@
                 cartItems = [];
                 console.log('No hay datos de carrito en localStorage. Carrito inicializado vacío.'); // DEBUG: No hay datos
             }
-            updateCartUI(); // Actualiza la UI después de cargar
+            updateCartItemCount(); // Actualiza el contador al cargar
         }
 
         // Añade un producto al carrito
@@ -1023,94 +913,14 @@
             showNotification(`${product.name} añadido al carrito.`, 'success');
         }
 
-        // Actualiza la cantidad de un artículo en el carrito
-        function updateCartItemQuantity(productId, newQuantity) {
-            console.log(`Actualizando cantidad para ${productId} a ${newQuantity}`); // DEBUG: Actualizando cantidad
-            const itemIndex = cartItems.findIndex(item => item.id === productId);
-            if (itemIndex !== -1) {
-                if (newQuantity <= 0) {
-                    removeFromCart(productId);
-                } else {
-                    cartItems[itemIndex].quantity = newQuantity;
-                    cartItems[itemIndex].addedAt = new Date().getTime(); // Refrescar timestamp al actualizar
-                    saveCart();
-                    console.log('Cantidad actualizada:', cartItems[itemIndex]); // DEBUG: Cantidad actualizada
-                }
+        // Solo actualiza el contador del carrito flotante
+        function updateCartItemCount() {
+            if (cartItemCountElem) {
+                const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+                cartItemCountElem.textContent = totalItems;
+                console.log('Contador del carrito actualizado a:', totalItems); // DEBUG: Contador
             }
         }
-
-        // Elimina un producto del carrito
-        function removeFromCart(productId) {
-            console.log('Removiendo producto del carrito:', productId); // DEBUG: Removiendo
-            cartItems = cartItems.filter(item => item.id !== productId);
-            saveCart();
-            showNotification('Producto eliminado del carrito.', 'info');
-        }
-
-        // Vacía todo el carrito
-        function clearCart() {
-            console.log('Vaciando carrito.'); // DEBUG: Vaciando
-            cartItems = [];
-            saveCart();
-            showNotification('Carrito vaciado.', 'info');
-        }
-
-        // Actualiza la interfaz de usuario del carrito
-        function updateCartUI() {
-            // Asegurarse de que todos los elementos existan. Si no, loguear un error y salir.
-            if (!cartItemCountElem || !cartItemsListElem || !emptyCartMessageElem || !cartSubtotalElem || !cartTaxElem || !cartTotalElem) {
-                console.error("Error: Uno o más elementos del carrito no se encontraron en el DOM al intentar actualizar la UI. Asegúrate de que el DOM esté completamente cargado y los IDs sean correctos.");
-                return; // Salir de la función si los elementos no están listos
-            }
-
-            console.log('Actualizando UI del carrito. Items actuales:', cartItems); // DEBUG: Antes de actualizar UI
-
-            // Actualizar el contador del carrito flotante
-            const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-            cartItemCountElem.textContent = totalItems;
-            console.log('Contador del carrito actualizado a:', totalItems); // DEBUG: Contador
-
-            // Renderizar la lista de elementos en el modal
-            cartItemsListElem.innerHTML = ''; // Limpiar lista
-            let subtotal = 0;
-
-            if (cartItems.length === 0) {
-                emptyCartMessageElem.classList.remove('hidden');
-                console.log('Carrito está vacío. Mostrando mensaje.'); // DEBUG: Carrito vacío
-            } else {
-                emptyCartMessageElem.classList.add('hidden');
-                console.log('Renderizando items del carrito...'); // DEBUG: Renderizando
-                cartItems.forEach(item => {
-                    subtotal += item.price * item.quantity;
-
-                    const itemDiv = document.createElement('div');
-                    itemDiv.className = 'cart-item';
-                    itemDiv.innerHTML = `
-                        <img src="${item.image}" alt="${item.name}" class="cart-item-image" onerror="this.src='https://placehold.co/60x60/cccccc/333333?text=Sin+Imagen';">
-                        <div class="flex-grow">
-                            <p class="font-semibold text-slate-800">${item.name}</p>
-                            <p class="text-sm text-purple-600">$${item.price.toFixed(2)} c/u</p>
-                        </div>
-                        <div class="flex items-center gap-2 quantity-control">
-                            <button onclick="updateCartItemQuantity('${item.id}', ${item.quantity - 1})" class="bg-slate-200 text-slate-800 px-2 py-1 rounded-md hover:bg-slate-300">-</button>
-                            <span class="font-medium">${item.quantity}</span>
-                            <button onclick="updateCartItemQuantity('${item.id}', ${item.quantity + 1})" class="bg-slate-200 text-slate-800 px-2 py-1 rounded-md hover:bg-slate-300">+</button>
-                            <button onclick="removeFromCart('${item.id}')" class="ml-2 text-red-500 hover:text-red-700 text-lg">🗑</button>
-                        </div>
-                    `;
-                    cartItemsListElem.appendChild(itemDiv);
-                });
-            }
-
-            const tax = subtotal * TAX_RATE;
-            const total = subtotal + tax;
-
-            cartSubtotalElem.textContent = `$${subtotal.toFixed(2)}`;
-            cartTaxElem.textContent = `$${tax.toFixed(2)}`;
-            cartTotalElem.textContent = `$${total.toFixed(2)}`;
-            console.log('Subtotal:', subtotal.toFixed(2), 'Impuesto:', tax.toFixed(2), 'Total:', total.toFixed(2)); // DEBUG: Totales
-        }
-
 
         // Función para mostrar notificaciones temporales
         function showNotification(message, type) {
@@ -1140,12 +950,6 @@
             }, 3000);
         }
 
-        // Función para imprimir el contenido del carrito
-        function printCartContent() {
-            window.print();
-        }
-
-
         // Inicialización de la página cuando el DOM está completamente cargado
         document.addEventListener('DOMContentLoaded', () => {
             // Cargar productos del localStorage o usar ejemplos
@@ -1171,37 +975,10 @@
                 button.addEventListener('click', handleCategoryClick);
             });
 
-            // --- Inicialización de variables globales del DOM para el Carrito ---
+            // Inicialización de la variable global del contador del carrito
             cartItemCountElem = document.getElementById('cartItemCount');
-            cartItemsListElem = document.getElementById('cartItemsList');
-            emptyCartMessageElem = document.getElementById('emptyCartMessage');
-            cartSubtotalElem = document.getElementById('cartSubtotal');
-            cartTaxElem = document.getElementById('cartTax');
-            cartTotalElem = document.getElementById('cartTotal');
-
-            // --- Inicialización y Eventos del Carrito ---
-            const floatingCartBtn = document.getElementById('floatingCartBtn');
-            const cartModalOverlay = document.getElementById('cartModalOverlay');
-            const closeCartModalBtn = document.getElementById('closeCartModal');
-            const clearCartBtn = document.getElementById('clearCartBtn');
-            const printCartBtn = document.getElementById('printCartBtn'); // Nuevo botón de imprimir
-
-            floatingCartBtn.addEventListener('click', () => {
-                cartModalOverlay.classList.add('open');
-                updateCartUI(); // Asegurarse de que el carrito esté actualizado al abrir
-            });
-            closeCartModalBtn.addEventListener('click', () => {
-                cartModalOverlay.classList.remove('open');
-            });
-            cartModalOverlay.addEventListener('click', (e) => {
-                if (e.target === cartModalOverlay) { // Cierra si se hace clic fuera del contenido
-                    cartModalOverlay.classList.remove('open');
-                }
-            });
-            clearCartBtn.addEventListener('click', clearCart);
-            printCartBtn.addEventListener('click', printCartContent); // Asignar evento al botón de imprimir
-
-            loadCart(); // Cargar el carrito al iniciar la página
+            
+            loadCart(); // Cargar el carrito al iniciar la página para actualizar el contador
         });
     </script>
 </body>
