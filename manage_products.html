@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Productos - ProAudio</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Gestionar Productos - Radio Pro Shop</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -13,34 +12,52 @@
             background-color: #f8fafc; /* Tailwind: bg-slate-50 */
             color: #1e293b; /* Tailwind: text-slate-800 */
         }
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #fff;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        textarea {
+            min-height: 400px;
+        }
+        button {
+            transition: all 0.2s ease-in-out;
+        }
+        button:hover {
+            transform: translateY(-1px);
+        }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 p-6">
+<body class="bg-slate-50 text-slate-800">
+    <div class="container">
+        <h1 class="text-3xl font-bold text-purple-700 mb-6 text-center">Gestionar Productos</h1>
+        <p class="mb-4 text-slate-700">Pega aquí tu JSON de productos para cargarlos en el catálogo principal. La información se guardará en tu navegador.</p>
 
-    <div class="container mx-auto bg-white rounded-lg shadow-xl p-8 max-w-2xl mt-10">
-        <h1 class="text-3xl font-bold text-purple-700 mb-6 text-center">Gestión de Productos</h1>
-        <p class="text-sm text-red-600 mb-6 text-center">
-            <strong>Importante:</strong> Esta página se utiliza para cargar y actualizar los datos de los productos en tu catálogo. La información cargada aquí se guardará localmente en tu navegador y estará disponible en la página principal del catálogo (`index.html`).
-        </p>
-        <p class="text-sm text-slate-600 mb-6 text-center">
-            Para que la página principal muestre tus productos, primero cárgalos aquí. Luego, visita `index.html`.
-        </p>
-
-        <label for="productJsonInput" class="block text-lg font-medium mb-2 text-slate-800">Pegar JSON de Productos aquí:</label>
-        <textarea id="productJsonInput" rows="15" class="w-full p-4 border border-slate-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 mb-6 resize-y" placeholder='Ejemplo de formato JSON: [{"id": "prod001", "name": "Nombre Producto", "description": "Descripción del producto...", "originalPrice": 123.45, "rating": 4.5, "reviewsCount": 1200, "category": "Micrófonos", "images": ["url_imagen_1", "url_imagen_2"]}]'></textarea>
-
-        <div class="flex flex-col sm:flex-row justify-center gap-4">
-            <button id="loadProductsBtn" class="bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 transition duration-200 shadow-md">Cargar Productos desde JSON</button>
-            <button id="loadSampleProductsBtn" class="bg-slate-400 text-white px-8 py-3 rounded-lg hover:bg-slate-500 transition duration-200 shadow-md">Cargar Productos de Ejemplo</button>
+        <textarea id="productJsonInput" class="w-full p-4 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4 font-mono text-sm"></textarea>
+        
+        <div class="flex flex-col md:flex-row gap-4">
+            <button id="loadJsonBtn" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 flex-grow">Cargar Productos desde JSON</button>
+            <button id="loadSampleBtn" class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 flex-grow">Cargar Productos de Ejemplo (más de 30)</button>
+            <button id="clearProductsBtn" class="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 flex-grow">Borrar Todos los Productos Guardados</button>
         </div>
-
-        <p class="text-center text-slate-500 text-sm mt-8">
+        <p id="message" class="mt-4 text-center font-medium"></p>
+        <p class="mt-6 text-center text-sm text-slate-500">
             <a href="index.html" class="text-purple-600 hover:underline">Volver al Catálogo Principal</a>
         </p>
     </div>
 
     <script>
         const PRODUCT_STORAGE_KEY = 'proaudio_catalog_products';
+        const productJsonInput = document.getElementById('productJsonInput');
+        const loadJsonBtn = document.getElementById('loadJsonBtn');
+        const loadSampleBtn = document.getElementById('loadSampleBtn');
+        const clearProductsBtn = document.getElementById('clearProductsBtn');
+        const messageElem = document.getElementById('message');
+
+        // Productos de ejemplo (más de 30) - Esta es la lista que se cargará
         const sampleProducts = [
             {
                 "id": "ACC001", "name": "JOMLEY Balanced XLR to TRRS Converter Cable",
@@ -118,7 +135,7 @@
                 "id": "MIC003", "name": "Studio-quality USB Condenser Microphone",
                 "description": "Micrófono de condensador USB de calidad de estudio para podcasting, producción de música y grabación de instrumentos.",
                 "originalPrice": 69.99, "rating": 4.5, "reviewsCount": 1200, "category": "Micrófonos de estudio",
-                "images": [ /* <--- Error corregido aquí. Se eliminó un doble comilla inicial en "images" */
+                "images": [
                     "https://m.media-amazon.com/images/I/71r5h8m+z2L._AC_SL1500_.jpg",
                     "https://m.media-amazon.com/images/I/71r-R2m3fWL._AC_SL1500_.jpg",
                     "https://m.media-amazon.com/images/I/71z0o3m4pZL._AC_SL1500_.jpg"
@@ -475,76 +492,51 @@
             }
         ];
 
-        // Función para mostrar notificaciones temporales
-        function showNotification(message, type) {
-            const notification = document.createElement('div');
-            notification.className = `fixed bottom-4 right-4 p-4 rounded-lg shadow-lg text-white z-50 transition-transform transform translate-y-full opacity-0 duration-300`;
-            if (type === 'success') {
-                notification.classList.add('bg-green-500');
-            } else if (type === 'error') {
-                notification.classList.add('bg-red-500');
-            } else {
-                notification.classList.add('bg-gray-700');
-            }
-            notification.textContent = message;
-            document.body.appendChild(notification);
-
-            // Animate in
-            setTimeout(() => {
-                notification.classList.remove('translate-y-full', 'opacity-0');
-                notification.classList.add('translate-y-0', 'opacity-100');
-            }, 100);
-
-            // Animate out and remove
-            setTimeout(() => {
-                notification.classList.remove('translate-y-0', 'opacity-100');
-                notification.classList.add('translate-y-full', 'opacity-0');
-                notification.addEventListener('transitionend', () => notification.remove());
-            }, 3000);
-        }
-
-        // Función para cargar productos desde el área de texto JSON
-        function loadProductsFromInput() {
-            const jsonInput = document.getElementById('productJsonInput').value;
-            try {
-                const parsedProducts = JSON.parse(jsonInput); // Intentar parsear el JSON
-                if (Array.isArray(parsedProducts) && parsedProducts.every(p => p.id && p.name && p.originalPrice && p.category && p.images && Array.isArray(p.images) && p.images.length > 0)) {
-                    // Guardar los productos en localStorage
-                    localStorage.setItem(PRODUCT_STORAGE_KEY, JSON.stringify(parsedProducts));
-                    showNotification('Productos cargados exitosamente desde el JSON y guardados localmente.', 'success');
-                    document.getElementById('productJsonInput').value = ''; // Limpiar el input
-                } else {
-                    throw new Error('El JSON no es un array de productos válido o le faltan campos esenciales (id, name, originalPrice, category, images).');
-                }
-            } catch (error) {
-                showNotification(`Error al cargar productos: ${error.message}. Asegúrate de que el formato JSON es correcto y completo.`, 'error');
-                console.error('Error al parsear JSON:', error);
-            }
-        }
-
-        // Inicialización de la página cuando el DOM está completamente cargado
         document.addEventListener('DOMContentLoaded', () => {
-            // Asignar manejador de evento al botón de cargar JSON
-            document.getElementById('loadProductsBtn').addEventListener('click', loadProductsFromInput);
+            // Mostrar productos guardados en el textarea si existen
+            const savedProducts = localStorage.getItem(PRODUCT_STORAGE_KEY);
+            if (savedProducts) {
+                try {
+                    const products = JSON.parse(savedProducts);
+                    productJsonInput.value = JSON.stringify(products, null, 2);
+                    messageElem.textContent = `Se encontraron ${products.length} productos guardados en localStorage.`;
+                    messageElem.className = 'mt-4 text-center font-medium text-blue-600';
+                } catch (e) {
+                    messageElem.textContent = 'Error al cargar productos guardados. Formato JSON inválido.';
+                    messageElem.className = 'mt-4 text-center font-medium text-red-600';
+                    console.error("Error parsing saved products JSON from localStorage:", e);
+                }
+            } else {
+                messageElem.textContent = 'No hay productos guardados actualmente. Usa el botón para cargar ejemplos o pega tu JSON.';
+                messageElem.className = 'mt-4 text-center font-medium text-slate-600';
+            }
 
-            // Asignar manejador de evento al botón para cargar productos de ejemplo
-            document.getElementById('loadSampleProductsBtn').addEventListener('click', () => {
-                localStorage.setItem(PRODUCT_STORAGE_KEY, JSON.stringify(sampleProducts));
-                showNotification('Productos de ejemplo cargados y guardados localmente.', 'info');
-                document.getElementById('productJsonInput').value = ''; // Limpiar el input
+            loadJsonBtn.addEventListener('click', () => {
+                try {
+                    const products = JSON.parse(productJsonInput.value);
+                    localStorage.setItem(PRODUCT_STORAGE_KEY, JSON.stringify(products));
+                    messageElem.textContent = `¡${products.length} productos cargados y guardados exitosamente!`;
+                    messageElem.className = 'mt-4 text-center font-medium text-green-600';
+                } catch (e) {
+                    messageElem.textContent = 'Error al parsear el JSON. Asegúrate de que el formato sea correcto.';
+                    messageElem.className = 'mt-4 text-center font-medium text-red-600';
+                    console.error("Error parsing input JSON:", e);
+                }
             });
 
-            // Opcional: Cargar JSON de localStorage si existe al cargar la página de gestión
-            const storedProducts = localStorage.getItem(PRODUCT_STORAGE_KEY);
-            if (storedProducts) {
-                try {
-                    document.getElementById('productJsonInput').value = JSON.stringify(JSON.parse(storedProducts), null, 2);
-                    showNotification('Productos existentes cargados en el editor.', 'info');
-                } catch (e) {
-                    console.error('Error al cargar productos existentes desde localStorage:', e);
-                    showNotification('Error al cargar productos existentes.', 'error');
-                }
-            }
+            loadSampleBtn.addEventListener('click', () => {
+                localStorage.setItem(PRODUCT_STORAGE_KEY, JSON.stringify(sampleProducts));
+                productJsonInput.value = JSON.stringify(sampleProducts, null, 2);
+                messageElem.textContent = `¡${sampleProducts.length} productos de ejemplo cargados y guardados!`;
+                messageElem.className = 'mt-4 text-center font-medium text-green-600';
+            });
+
+            clearProductsBtn.addEventListener('click', () => {
+                localStorage.removeItem(PRODUCT_STORAGE_KEY);
+                productJsonInput.value = '';
+                messageElem.textContent = 'Todos los productos han sido borrados de localStorage.';
+                messageElem.className = 'mt-4 text-center font-medium text-orange-600';
+            });
         });
     </script>
 </body>
