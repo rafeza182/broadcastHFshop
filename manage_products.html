@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Productos - ProAudio</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Tailwind: bg-slate-50 */
+            color: #1e293b; /* Tailwind: text-slate-800 */
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 p-6">
+
+    <div class="container mx-auto bg-white rounded-lg shadow-xl p-8 max-w-2xl mt-10">
+        <h1 class="text-3xl font-bold text-purple-700 mb-6 text-center">Gestión de Productos</h1>
+        <p class="text-sm text-red-600 mb-6 text-center">
+            <strong>Importante:</strong> Esta página se utiliza para cargar y actualizar los datos de los productos en tu catálogo. La información cargada aquí se guardará localmente en tu navegador y estará disponible en la página principal del catálogo (`index.html`).
+        </p>
+        <p class="text-sm text-slate-600 mb-6 text-center">
+            Para que la página principal muestre tus productos, primero cárgalos aquí. Luego, visita `index.html`.
+        </p>
+
+        <label for="productJsonInput" class="block text-lg font-medium mb-2 text-slate-800">Pegar JSON de Productos aquí:</label>
+        <textarea id="productJsonInput" rows="15" class="w-full p-4 border border-slate-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 mb-6 resize-y" placeholder='Ejemplo de formato JSON: [{"id": "prod001", "name": "Nombre Producto", "description": "Descripción del producto...", "originalPrice": 123.45, "rating": 4.5, "reviewsCount": 1200, "category": "Micrófonos", "images": ["url_imagen_1", "url_imagen_2"]}]'></textarea>
+
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <button id="loadProductsBtn" class="bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 transition duration-200 shadow-md">Cargar Productos desde JSON</button>
+            <button id="loadSampleProductsBtn" class="bg-slate-400 text-white px-8 py-3 rounded-lg hover:bg-slate-500 transition duration-200 shadow-md">Cargar Productos de Ejemplo</button>
+        </div>
+
+        <p class="text-center text-slate-500 text-sm mt-8">
+            <a href="index.html" class="text-purple-600 hover:underline">Volver al Catálogo Principal</a>
+        </p>
+    </div>
+
+    <script>
+        const PRODUCT_STORAGE_KEY = 'proaudio_catalog_products';
+        const sampleProducts = [
+            // Los mismos productos de ejemplo que en la versión anterior
+            {
+                id: 'prod001',
+                name: "Rode Wireless GO II",
+                description: "Sistema de micrófono inalámbrico ultracompacto de doble canal ideal para entrevistas y vlogs.",
+                originalPrice: 299.00,
+                rating: 4.8,
+                reviewsCount: 3500,
+                category: "Micrófonos",
+                images: [
+                    "https://m.media-amazon.com/images/I/61Nl-t0+JmL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/611aE1h4NqL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71hLg9n3uGL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/719F8D06gEL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                id: 'prod002',
+                name: "HyperX QuadCast S - Micrófono Condensador RGB",
+                description: "Micrófono USB para juegos y streaming con impresionantes efectos de iluminación RGB dinámicos y cuatro patrones polares.",
+                originalPrice: 159.99,
+                rating: 4.7,
+                reviewsCount: 8900,
+                category: "Micrófonos",
+                images: [
+                    "https://m.media-amazon.com/images/I/71r9fU5kI7L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/7123+Y4a-ML._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/714h8y1J-YL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/711qjS0JcUL._AC_SL1500_.jpg",
+                ]
+            },
+            {
+                id: 'prod003',
+                name: "Rode VXLR Adaptador Hembra a TRS Macho",
+                description: "Adaptador compacto para convertir un conector XLR hembra en un jack TRS de 3.5mm.",
+                originalPrice: 15.00,
+                rating: 4.6,
+                reviewsCount: 250,
+                category: "Accesorios",
+                images: [
+                    "https://m.media-amazon.com/images/I/617D9t9u61L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61-dJ34G8xL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61J64M5T3rL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                id: 'prod004',
+                name: "Focusrite Scarlett 2i2 3rd Gen",
+                description: "Interfaz de audio USB de 2 entradas/2 salidas, ideal para músicos y podcasters con preamplificadores de micrófono mejorados.",
+                originalPrice: 179.99,
+                rating: 4.7,
+                reviewsCount: 15000,
+                category: "Interfaces / Mixers",
+                images: [
+                    "https://m.media-amazon.com/images/I/61M-WcT05XL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61z95W5m1CL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71N1+0+e7XL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/618xQ2rXWnL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                id: 'prod005',
+                name: "Sony MDR7506 Auriculares Profesionales",
+                description: "Auriculares de estudio cerrados, legendarios por su sonido preciso y aislamiento, ideales para monitoreo de audio.",
+                originalPrice: 99.99,
+                rating: 4.8,
+                reviewsCount: 45000,
+                category: "Audífonos",
+                images: [
+                    "https://m.media-amazon.com/images/I/71z7j1w+HCL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/81x9C3b6n4L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/81u2H0Jq-SL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71+R+z+k+3L._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                id: 'prod006',
+                name: "TONOR Adjustable Microphone Arm",
+                description: "Brazo de micrófono ajustable con soporte de abrazadera de escritorio y gestión de cables integrada.",
+                originalPrice: 35.00,
+                rating: 4.5,
+                reviewsCount: 800,
+                category: "Accesorios",
+                images: [
+                    "https://m.media-amazon.com/images/I/71E3rTjM44L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71e-S1A2NBL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71q+Rj-xLlL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71iB5z5c3yL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                id: 'prod007',
+                name: "Behringer UMC202HD Interfaz de Audio",
+                description: "Interfaz de audio USB de 2 entradas/2 salidas con preamplificadores MIDAS de alta calidad para grabación.",
+                originalPrice: 129.00,
+                rating: 4.6,
+                reviewsCount: 10000,
+                category: "Interfaces / Mixers",
+                images: [
+                    "https://m.media-amazon.com/images/I/71-Lg8f7HRL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/617n-J2V4JL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61kG+4+sB1L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/7123+A-vL2L._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                id: 'prod008',
+                name: "HyperX Cloud II - Auriculares Gaming",
+                description: "Auriculares para juegos con sonido envolvente virtual 7.1, micrófono con cancelación de ruido y comodidad premium.",
+                originalPrice: 79.99,
+                rating: 4.6,
+                reviewsCount: 50000,
+                category: "Audífonos",
+                images: [
+                    "https://m.media-amazon.com/images/I/71W-u2sLhML._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71N-2l-YyEL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71+0M2Q-wRL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71z9X-g-LXL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                id: 'prod009',
+                name: "Blue Yeti USB Micrófono",
+                description: "Micrófono USB versátil con múltiples patrones polares, ideal para podcasting, streaming y grabaciones de música.",
+                originalPrice: 129.99,
+                rating: 4.7,
+                reviewsCount: 75000,
+                category: "Micrófonos",
+                images: [
+                    "https://m.media-amazon.com/images/I/71Lg1FzJv9L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71h3zJ7fVBL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/717v2fV911L._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                id: 'prod010',
+                name: "TONOR TC-777 Micrófono de Condensador USB",
+                description: "Micrófono de condensador USB plug & play, ideal para grabar voces y podcasts.",
+                originalPrice: 39.99,
+                rating: 4.4,
+                reviewsCount: 1500,
+                category: "Micrófonos",
+                images: [
+                    "https://m.media-amazon.com/images/I/71Yf9+f-pLL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71nO4M0uC1L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71Q3d1F-7BL._AC_SL1500_.jpg"
+                ]
+            }
+        ];
+
+        // Función para mostrar notificaciones temporales
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `fixed bottom-4 right-4 p-4 rounded-lg shadow-lg text-white z-50 transition-transform transform translate-y-full opacity-0 duration-300`;
+            if (type === 'success') {
+                notification.classList.add('bg-green-500');
+            } else if (type === 'error') {
+                notification.classList.add('bg-red-500');
+            } else {
+                notification.classList.add('bg-gray-700');
+            }
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-y-full', 'opacity-0');
+                notification.classList.add('translate-y-0', 'opacity-100');
+            }, 100);
+
+            // Animate out and remove
+            setTimeout(() => {
+                notification.classList.remove('translate-y-0', 'opacity-100');
+                notification.classList.add('translate-y-full', 'opacity-0');
+                notification.addEventListener('transitionend', () => notification.remove());
+            }, 3000);
+        }
+
+        // Función para cargar productos desde el área de texto JSON
+        function loadProductsFromInput() {
+            const jsonInput = document.getElementById('productJsonInput').value;
+            try {
+                const parsedProducts = JSON.parse(jsonInput); // Intentar parsear el JSON
+                if (Array.isArray(parsedProducts) && parsedProducts.every(p => p.id && p.name && p.originalPrice && p.category && p.images && Array.isArray(p.images) && p.images.length > 0)) {
+                    // Guardar los productos en localStorage
+                    localStorage.setItem(PRODUCT_STORAGE_KEY, JSON.stringify(parsedProducts));
+                    showNotification('Productos cargados exitosamente desde el JSON y guardados localmente.', 'success');
+                    document.getElementById('productJsonInput').value = ''; // Limpiar el input
+                } else {
+                    throw new Error('El JSON no es un array de productos válido o le faltan campos esenciales (id, name, originalPrice, category, images).');
+                }
+            } catch (error) {
+                showNotification(`Error al cargar productos: ${error.message}. Asegúrate de que el formato JSON es correcto y completo.`, 'error');
+                console.error('Error al parsear JSON:', error);
+            }
+        }
+
+        // Inicialización de la página cuando el DOM está completamente cargado
+        document.addEventListener('DOMContentLoaded', () => {
+            // Asignar manejador de evento al botón de cargar JSON
+            document.getElementById('loadProductsBtn').addEventListener('click', loadProductsFromInput);
+
+            // Asignar manejador de evento al botón para cargar productos de ejemplo
+            document.getElementById('loadSampleProductsBtn').addEventListener('click', () => {
+                localStorage.setItem(PRODUCT_STORAGE_KEY, JSON.stringify(sampleProducts));
+                showNotification('Productos de ejemplo cargados y guardados localmente.', 'info');
+                document.getElementById('productJsonInput').value = ''; // Limpiar el input
+            });
+
+            // Opcional: Cargar JSON de localStorage si existe al cargar la página de gestión
+            const storedProducts = localStorage.getItem(PRODUCT_STORAGE_KEY);
+            if (storedProducts) {
+                try {
+                    document.getElementById('productJsonInput').value = JSON.stringify(JSON.parse(storedProducts), null, 2);
+                    showNotification('Productos existentes cargados en el editor.', 'info');
+                } catch (e) {
+                    console.error('Error al cargar productos existentes desde localStorage:', e);
+                    showNotification('Error al cargar productos existentes.', 'error');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
