@@ -40,6 +40,27 @@
         .category-button.active {
             @apply bg-purple-600 text-white;
         }
+        .category-button {
+            transition: all 0.2s ease-in-out;
+            position: relative;
+            overflow: hidden;
+        }
+        .category-button:hover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: scaleX(0);
+            transform-origin: left;
+            animation: expand-x 0.3s forwards;
+        }
+        @keyframes expand-x {
+            to { transform: scaleX(1); }
+        }
+
         /* Contenedor de la cuadrícula de productos para scroll horizontal en móvil */
         .product-grid-container {
             overflow-x: auto;
@@ -71,7 +92,7 @@
         .floating-cart-btn {
             position: fixed;
             bottom: 1.5rem; /* 24px */
-            left: 1.5rem; /* 24px */
+            right: 1.5rem; /* 24px */ /* CAMBIO A DERECHA */
             z-index: 1000;
             @apply bg-purple-700 text-white p-4 rounded-full shadow-lg flex items-center justify-center cursor-pointer;
             transition: transform 0.2s ease-in-out;
@@ -94,7 +115,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.7); /* Fondo más oscuro */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -127,6 +148,45 @@
         .quantity-control button {
             @apply bg-slate-200 text-slate-800 px-2 py-1 rounded-md hover:bg-slate-300;
         }
+
+        /* Estilos para la impresión del carrito */
+        @media print {
+            body > *:not(.cart-modal-overlay) {
+                display: none; /* Oculta todo excepto el modal del carrito */
+            }
+            .cart-modal-overlay {
+                position: static;
+                display: block;
+                width: auto;
+                height: auto;
+                background-color: white;
+                opacity: 1;
+                visibility: visible;
+                box-shadow: none;
+            }
+            .cart-modal-content {
+                width: 100%;
+                max-width: none;
+                margin: 0;
+                padding: 1rem;
+                box-shadow: none;
+                border: none;
+                transform: none;
+                overflow-y: visible;
+            }
+            .cart-modal-content .flex.justify-between.items-center.mb-4.border-b.pb-2 {
+                display: flex !important;
+            }
+            .cart-modal-content h2 {
+                text-align: left;
+                width: 100%;
+            }
+            .cart-modal-content button#closeCartModal,
+            .cart-modal-content button#clearCartBtn,
+            .cart-modal-content button#printCartBtn {
+                display: none; /* Oculta los botones de control en la impresión */
+            }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -137,7 +197,8 @@
             <h1 class="text-3xl font-bold text-purple-700 mb-2 md:mb-0">ProAudio Catálogo</h1>
             <nav class="flex flex-wrap justify-center md:justify-end gap-2 md:gap-4">
                 <button class="category-button px-4 py-2 rounded-lg text-slate-700 hover:bg-purple-100 hover:text-purple-700 transition duration-200" data-category="all">Todos</button>
-                <button class="category-button px-4 py-2 rounded-lg text-slate-700 hover:bg-purple-100 hover:text-purple-700 transition duration-200" data-category="Micrófonos">🎙 Micrófonos</button>
+                <button class="category-button px-4 py-2 rounded-lg text-slate-700 hover:bg-purple-100 hover:text-purple-700 transition duration-200" data-category="Micrófonos de estudio">🎙 Micrófonos de estudio</button>
+                <button class="category-button px-4 py-2 rounded-lg text-slate-700 hover:bg-purple-100 hover:text-purple-700 transition duration-200" data-category="Micrófonos de solapa">🎤 Micrófonos de solapa</button>
                 <button class="category-button px-4 py-2 rounded-lg text-slate-700 hover:bg-purple-100 hover:text-purple-700 transition duration-200" data-category="Audífonos">🎧 Audífonos</button>
                 <button class="category-button px-4 py-2 rounded-lg text-slate-700 hover:bg-purple-100 hover:text-purple-700 transition duration-200" data-category="Interfaces / Mixers">🎚 Interfaces / Mixers</button>
                 <button class="category-button px-4 py-2 rounded-lg text-slate-700 hover:bg-purple-100 hover:text-purple-700 transition duration-200" data-category="Accesorios">⚙️ Accesorios</button>
@@ -148,7 +209,7 @@
     <main class="container mx-auto p-6 mt-4">
         <!-- Sección del Catálogo de Productos -->
         <section>
-            <h2 class="text-2xl font-semibold mb-4 text-purple-700">Nuestro Catálogo</h2>
+            <!-- Eliminado: <h2 class="text-2xl font-semibold mb-4 text-purple-700">Nuestro Catálogo</h2> -->
             <div id="productGrid" class="product-grid-container">
                 <!-- Aquí se renderizarán los productos -->
             </div>
@@ -190,6 +251,7 @@
                     <span id="cartTotal">$0.00</span>
                 </div>
                 <button id="clearCartBtn" class="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition duration-200 mt-4 w-full">Vaciar Carrito</button>
+                <button id="printCartBtn" class="bg-slate-600 text-white px-6 py-2 rounded-lg hover:bg-slate-700 transition duration-200 mt-2 w-full">Imprimir Carrito</button>
             </div>
         </div>
     </div>
@@ -216,14 +278,60 @@
         // Productos de ejemplo (solo se usan si no hay productos guardados en localStorage)
         const sampleProducts = [
             {
-                id: 'prod001',
-                name: "Rode Wireless GO II",
-                description: "Sistema de micrófono inalámbrico ultracompacto de doble canal ideal para entrevistas y vlogs.",
-                originalPrice: 299.00,
-                rating: 4.8,
-                reviewsCount: 3500,
-                category: "Micrófonos",
-                images: [
+                "id": "ACC001", "name": "JOMLEY Balanced XLR to TRRS Converter Cable",
+                "description": "Cable adaptador XLR macho a 3.5mm TRRS hembra, ideal para conectar micrófonos XLR a dispositivos móviles y cámaras.",
+                "originalPrice": 12.99, "rating": 4.3, "reviewsCount": 85, "category": "Accesorios",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61lY4r6c2CL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61gXbN74m0L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61tC5E3W6YL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "ACC002", "name": "Ancable Mini Jack to XLR Microphone Converter",
+                "description": "Adaptador de 3.5mm a XLR para micrófonos, compatible con cámaras y videocámaras.",
+                "originalPrice": 9.99, "rating": 4.1, "reviewsCount": 120, "category": "Accesorios",
+                "images": [
+                    "https://m.media-amazon.com/images/I/516e8P2d2KL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/51w+S6K5gVL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/51x+N3-4+ZL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "ACC003", "name": "Rode VXLR Female TRS to XLR Male Adapter",
+                "description": "Adaptador RØDE VXLR que convierte alimentación phantom de 48V a alimentación plug-in de 2-5V para micrófonos TRS.",
+                "originalPrice": 19.00, "rating": 4.7, "reviewsCount": 700, "category": "Accesorios",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61u9iB0gB7L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61-dJ34G8xL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61J64M5T3rL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "ACC004", "name": "Mini Jack TRS Female to XLR Male Adapter (VideoMic)",
+                "description": "Adaptador compacto TRS hembra a XLR macho, especialmente diseñado para micrófonos RØDE VideoMic.",
+                "originalPrice": 16.99, "rating": 4.5, "reviewsCount": 150, "category": "Accesorios",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61L-PzSgHwL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61t5T-e0kDL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61E9p4z8XgL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "ACC005", "name": "RØDE TRS-XLR Adaptor VXLR Pro",
+                "description": "Adaptador RØDE VXLR Pro con transformador de aislamiento para conectar micrófonos TRS a entradas XLR.",
+                "originalPrice": 39.00, "rating": 4.8, "reviewsCount": 300, "category": "Accesorios",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61u4P8U7BfL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61P0Q8G9HUL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/617n-Z2W47L._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC001", "name": "Rode Microphones Wireless GO II",
+                "description": "Sistema de micrófono inalámbrico ultracompacto de doble canal ideal para entrevistas y vlogs.",
+                "originalPrice": 299.00, "rating": 4.8, "reviewsCount": 3500, "category": "Micrófonos de estudio",
+                "images": [
                     "https://m.media-amazon.com/images/I/61Nl-t0+JmL._AC_SL1500_.jpg",
                     "https://m.media-amazon.com/images/I/611aE1h4NqL._AC_SL1500_.jpg",
                     "https://m.media-amazon.com/images/I/71hLg9n3uGL._AC_SL1500_.jpg",
@@ -231,14 +339,10 @@
                 ]
             },
             {
-                id: 'prod002',
-                name: "HyperX QuadCast S - Micrófono Condensador RGB",
-                description: "Micrófono USB para juegos y streaming con impresionantes efectos de iluminación RGB dinámicos y cuatro patrones polares.",
-                originalPrice: 159.99,
-                rating: 4.7,
-                reviewsCount: 8900,
-                category: "Micrófonos",
-                images: [
+                "id": "MIC002", "name": "HyperX QuadCast S - Micrófono Condensador RGB",
+                "description": "Micrófono USB para juegos y streaming con impresionantes efectos de iluminación RGB dinámicos y cuatro patrones polares.",
+                "originalPrice": 159.99, "rating": 4.7, "reviewsCount": 8900, "category": "Micrófonos de estudio",
+                "images": [
                     "https://m.media-amazon.com/images/I/71r9fU5kI7L._AC_SL1500_.jpg",
                     "https://m.media-amazon.com/images/I/7123+Y4a-ML._AC_SL1500_.jpg",
                     "https://m.media-amazon.com/images/I/714h8y1J-YL._AC_SL1500_.jpg",
@@ -246,88 +350,140 @@
                 ]
             },
             {
-                id: 'prod003',
-                name: "Rode VXLR Adaptador Hembra a TRS Macho",
-                description: "Adaptador compacto para convertir un conector XLR hembra en un jack TRS de 3.5mm.",
-                originalPrice: 15.00,
-                rating: 4.6,
-                reviewsCount: 250,
-                category: "Accesorios",
-                images: [
-                    "https://m.media-amazon.com/images/I/617D9t9u61L._AC_SL1500_.jpg",
-                    "https://m.media-amazon.com/images/I/61-dJ34G8xL._AC_SL1500_.jpg",
-                    "https://m.media-amazon.com/images/I/61J64M5T3rL._AC_SL1500_.jpg"
+                "id": "MIC003", "name": "Studio-quality USB Condenser Microphone",
+                "description": "Micrófono de condensador USB de calidad de estudio para podcasting, producción de música y grabación de instrumentos.",
+                "originalPrice": 69.99, "rating": 4.5, "reviewsCount": 1200, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71r5h8m+z2L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71r-R2m3fWL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71z0o3m4pZL._AC_SL1500_.jpg"
                 ]
             },
             {
-                id: 'prod004',
-                name: "Focusrite Scarlett 2i2 3rd Gen",
-                description: "Interfaz de audio USB de 2 entradas/2 salidas, ideal para músicos y podcasters con preamplificadores de micrófono mejorados.",
-                originalPrice: 179.99,
-                rating: 4.7,
-                reviewsCount: 15000,
-                category: "Interfaces / Mixers",
-                images: [
-                    "https://m.media-amazon.com/images/I/61M-WcT05XL._AC_SL1500_.jpg",
-                    "https://m.media-amazon.com/images/I/61z95W5m1CL._AC_SL1500_.jpg",
-                    "https://m.media-amazon.com/images/I/71N1+0+e7XL._AC_SL1500_.jpg",
-                    "https://m.media-amazon.com/images/I/618xQ2rXWnL._AC_SL1500_.jpg"
+                "id": "MIC004", "name": "HyperX SoloCast - Micrófono USB para Streaming",
+                "description": "Micrófono USB compacto para streaming y podcasting con función de silenciamiento táctil.",
+                "originalPrice": 49.99, "rating": 4.6, "reviewsCount": 2500, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61c8rJ0a4oL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61Nl-t0+JmL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61s8Y7w2RGL._AC_SL1500_.jpg"
                 ]
             },
             {
-                id: 'prod005',
-                name: "Sony MDR7506 Auriculares Profesionales",
-                description: "Auriculares de estudio cerrados, legendarios por su sonido preciso y aislamiento, ideales para monitoreo de audio.",
-                originalPrice: 99.99,
-                rating: 4.8,
-                reviewsCount: 45000,
-                category: "Audífonos",
-                images: [
+                "id": "ACC006", "name": "TONOR Adjustable Microphone Arm with LED",
+                "description": "Brazo de micrófono ajustable con luces LED, gestión de cables y soporte de abrazadera de escritorio, ideal para streaming.",
+                "originalPrice": 45.99, "rating": 4.6, "reviewsCount": 950, "category": "Accesorios",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71F7o8C5nCL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71R2o5f-3JL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71-P4e5hNKL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "ACC007", "name": "Microphone Arm Stand with Pop Filter",
+                "description": "Soporte de brazo de micrófono de escritorio con filtro anti-pop y soporte de choque para grabación de audio.",
+                "originalPrice": 25.99, "rating": 4.4, "reviewsCount": 700, "category": "Accesorios",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61TfD1Z4mQL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61xR0pQ-mML._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61iXN3z0KML._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC005", "name": "Fifine K669B USB Microphone",
+                "description": "Micrófono USB plug and play ideal para grabar voces, podcasts y transmisiones en vivo.",
+                "originalPrice": 39.99, "rating": 4.5, "reviewsCount": 2100, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61y+2x-9bNL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61xJ2p-9LcL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61kF-4l5wzL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC006", "name": "MAONO AU-A04T USB Microphone",
+                "description": "Micrófono de condensador USB con brazo articulado y filtro pop, ideal para home studio.",
+                "originalPrice": 45.99, "rating": 4.3, "reviewsCount": 1800, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71R1s+i5M9L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71lC5n4gS5L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71Y+z-1l6dL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC007", "name": "Blue Yeti USB Microphone",
+                "description": "Micrófono USB versátil con múltiples patrones polares, ideal para podcasting, streaming y grabaciones de música.",
+                "originalPrice": 129.99, "rating": 4.7, "reviewsCount": 75000, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71Lg1FzJv9L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71h3zJ7fVBL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/717v2fV911L._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC008", "name": "MAONO PM401 USB Condenser Microphone",
+                "description": "Micrófono de condensador profesional con chipset de sonido avanzado para grabación de voz clara.",
+                "originalPrice": 59.99, "rating": 4.4, "reviewsCount": 3200, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/713Yf5P-JCL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71V2x-C2pML._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71nO4M0uC1L._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC009", "name": "TONOR Q9 USB Microphone",
+                "description": "Kit de micrófono USB plug and play con trípode y filtro pop para grabación y streaming.",
+                "originalPrice": 49.99, "rating": 4.3, "reviewsCount": 1900, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71Yf9+f-pLL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71nO4M0uC1L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71Q3d1F-7BL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC010", "name": "Neewer NW-700 Condenser Microphone",
+                "description": "Micrófono de condensador profesional Neewer con kit de montaje para estudio de grabación.",
+                "originalPrice": 29.99, "rating": 4.2, "reviewsCount": 1100, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71yB2P-JdQL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71Z-D3C-FGL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/710eE-P3JDL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC011", "name": "MAONO AU-PM461TR USB Microphone",
+                "description": "Micrófono USB portátil con trípode, ideal para grabar voces y videollamadas.",
+                "originalPrice": 24.99, "rating": 4.0, "reviewsCount": 800, "category": "Micrófonos de solapa",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61kM5nK4VwL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61V1oK9xTML._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61J0K2H3zUL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC012", "name": "Shure MV7 USB/XLR Podcast Microphone",
+                "description": "Micrófono híbrido USB/XLR de Shure, optimizado para podcasting y grabación de voz con calidad profesional.",
+                "originalPrice": 249.00, "rating": 4.9, "reviewsCount": 6500, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71W-u2sLhML._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71N-2l-YyEL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71+0M2Q-wRL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "HP001", "name": "OneOdio Pro-C Over Ear Headphones",
+                "description": "Auriculares supraaurales con sonido de alta fidelidad, ideales para DJ y monitoreo profesional.",
+                "originalPrice": 49.99, "rating": 4.5, "reviewsCount": 3000, "category": "Audífonos",
+                "images": [
                     "https://m.media-amazon.com/images/I/71z7j1w+HCL._AC_SL1500_.jpg",
                     "https://m.media-amazon.com/images/I/81x9C3b6n4L._AC_SL1500_.jpg",
-                    "https://m.media-amazon.com/images/I/81u2H0Jq-SL._AC_SL1500_.jpg",
-                    "https://m.media-amazon.com/images/I/71+R+z+k+3L._AC_SL1500_.jpg"
+                    "https://m.media-amazon.com/images/I/81u2H0Jq-SL._AC_SL1500_.jpg"
                 ]
             },
             {
-                id: 'prod006',
-                name: "TONOR Adjustable Microphone Arm",
-                description: "Brazo de micrófono ajustable con soporte de abrazadera de escritorio y gestión de cables integrada.",
-                originalPrice: 35.00,
-                rating: 4.5,
-                reviewsCount: 800,
-                category: "Accesorios",
-                images: [
-                    "https://m.media-amazon.com/images/I/71E3rTjM44L._AC_SL1500_.jpg",
-                    "https://m.media-amazon.com/images/I/71e-S1A2NBL._AC_SL1500_.jpg",
-                    "https://m.media-amazon.com/images/I/71q+Rj-xLlL._AC_SL1500_.jpg",
-                    "https://m.media-amazon.com/images/I/71iB5z5c3yL._AC_SL1500_.jpg"
-                ]
-            },
-            {
-                id: 'prod007',
-                name: "Behringer UMC202HD Interfaz de Audio",
-                description: "Interfaz de audio USB de 2 entradas/2 salidas con preamplificadores MIDAS de alta calidad para grabación.",
-                originalPrice: 129.00,
-                rating: 4.6,
-                reviewsCount: 10000,
-                category: "Interfaces / Mixers",
-                images: [
-                    "https://m.media-amazon.com/images/I/71-Lg8f7HRL._AC_SL1500_.jpg",
-                    "https://m.media-amazon.com/images/I/617n-J2V4JL._AC_SL1500_.jpg",
-                    "https://m.media-amazon.com/images/I/61kG+4+sB1L._AC_SL1500_.jpg",
-                    "https://m.media-amazon.com/images/I/7123+A-vL2L._AC_SL1500_.jpg"
-                ]
-            },
-            {
-                id: 'prod008',
-                name: "HyperX Cloud II - Auriculares Gaming",
-                description: "Auriculares para juegos con sonido envolvente virtual 7.1, micrófono con cancelación de ruido y comodidad premium.",
-                originalPrice: 79.99,
-                rating: 4.6,
-                reviewsCount: 50000,
-                category: "Audífonos",
-                images: [
+                "id": "HP002", "name": "HyperX Cloud II Gaming Headset",
+                "description": "Auriculares para juegos con sonido envolvente virtual 7.1, micrófono con cancelación de ruido y comodidad premium.",
+                "originalPrice": 79.99, "rating": 4.6, "reviewsCount": 50000, "category": "Audífonos",
+                "images": [
                     "https://m.media-amazon.com/images/I/71W-u2sLhML._AC_SL1500_.jpg",
                     "https://m.media-amazon.com/images/I/71N-2l-YyEL._AC_SL1500_.jpg",
                     "https://m.media-amazon.com/images/I/71+0M2Q-wRL._AC_SL1500_.jpg",
@@ -335,31 +491,221 @@
                 ]
             },
             {
-                id: 'prod009',
-                name: "Blue Yeti USB Micrófono",
-                description: "Micrófono USB versátil con múltiples patrones polares, ideal para podcasting, streaming y grabaciones de música.",
-                originalPrice: 129.99,
-                rating: 4.7,
-                reviewsCount: 75000,
-                category: "Micrófonos",
-                images: [
-                    "https://m.media-amazon.com/images/I/71Lg1FzJv9L._AC_SL1500_.jpg",
-                    "https://m.media-amazon.com/images/I/71h3zJ7fVBL._AC_SL1500_.jpg",
-                    "https://m.media-amazon.com/images/I/717v2fV911L._AC_SL1500_.jpg"
+                "id": "HP003", "name": "Philips SHP9500 HiFi Headphones",
+                "description": "Auriculares de alta fidelidad con diseño de respaldo abierto, ofrecen un sonido natural y claro para audiófilos.",
+                "originalPrice": 74.99, "rating": 4.7, "reviewsCount": 12000, "category": "Audífonos",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71x4uK3Tf1L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71w8N4rXqWL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71k1N2s0XdL._AC_SL1500_.jpg"
                 ]
             },
             {
-                id: 'prod010',
-                name: "TONOR TC-777 Micrófono de Condensador USB",
-                description: "Micrófono de condensador USB plug & play, ideal para grabar voces y podcasts.",
-                originalPrice: 39.99,
-                rating: 4.4,
-                reviewsCount: 1500,
-                category: "Micrófonos",
-                images: [
+                "id": "HP004", "name": "OneOdio Monitor 80 Headphones",
+                "description": "Auriculares de monitoreo de estudio con controladores de alta resolución, diseñados para mezclar y masterizar.",
+                "originalPrice": 89.99, "rating": 4.6, "reviewsCount": 4500, "category": "Audífonos",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71k1N2s0XdL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71w8N4rXqWL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71x4uK3Tf1L._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "HP005", "name": "Sony MDR7506 Professional Headphones",
+                "description": "Auriculares de estudio cerrados, legendarios por su sonido preciso y aislamiento, ideales para monitoreo de audio.",
+                "originalPrice": 99.99, "rating": 4.8, "reviewsCount": 45000, "category": "Audífonos",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71z7j1w+HCL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/81x9C3b6n4L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/81u2H0Jq-SL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71+R+z+k+3L._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "INT001", "name": "Behringer UMC202HD Audio Interface",
+                "description": "Interfaz de audio USB de 2 entradas/2 salidas con preamplificadores MIDAS de alta calidad para grabación.",
+                "originalPrice": 129.00, "rating": 4.6, "reviewsCount": 10000, "category": "Interfaces / Mixers",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71-Lg8f7HRL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/617n-J2V4JL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61kG+4+sB1L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/7123+A-vL2L._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "INT002", "name": "Focusrite Scarlett 2i2 3rd Gen",
+                "description": "Interfaz de audio USB de 2 entradas/2 salidas, ideal para músicos y podcasters con preamplificadores de micrófono mejorados.",
+                "originalPrice": 179.99, "rating": 4.7, "reviewsCount": 15000, "category": "Interfaces / Mixers",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61M-WcT05XL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61z95W5m1CL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71N1+0+e7XL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/618xQ2rXWnL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "INT003", "name": "MaonoCaster Lite AU-AM200 Mixer",
+                "description": "Consola de mezclado de podcast portátil con interfaz de audio para streaming en vivo, grabación y radio.",
+                "originalPrice": 89.99, "rating": 4.4, "reviewsCount": 2500, "category": "Interfaces / Mixers",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61L+7XQ-Q0L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61R-S8-G0L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61T-Q2C-P0L._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "ACC008", "name": "Adjustable Studio Monitor Speaker Stands (Pair)",
+                "description": "Soportes ajustables para monitores de estudio, diseñados para optimizar el sonido en tu espacio de trabajo.",
+                "originalPrice": 59.99, "rating": 4.5, "reviewsCount": 600, "category": "Accesorios",
+                "images": [
+                    "https://placehold.co/600x400/cccccc/333333?text=Soportes+Monitor+1",
+                    "https://placehold.co/600x400/cccccc/333333?text=Soportes+Monitor+2"
+                ]
+            },
+            {
+                "id": "ACC009", "name": "Professional XLR Cable (20ft)",
+                "description": "Cable XLR balanceado de 20 pies, ideal para micrófonos, interfaces y otros equipos de audio.",
+                "originalPrice": 14.99, "rating": 4.6, "reviewsCount": 1500, "category": "Accesorios",
+                "images": [
+                    "https://placehold.co/600x400/cccccc/333333?text=Cable+XLR+1",
+                    "https://placehold.co/600x400/cccccc/333333?text=Cable+XLR+2"
+                ]
+            },
+            {
+                "id": "MIC013", "name": "Rode NT-USB Mini Studio Microphone",
+                "description": "Micrófono USB compacto de calidad de estudio, ideal para grabaciones en casa, podcasting y streaming.",
+                "originalPrice": 99.00, "rating": 4.7, "reviewsCount": 4000, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/619eU3z-DVL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/619eU3z-DVL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71Lg1FzJv9L._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC014", "name": "TONOR TW-820 Wireless Microphone System",
+                "description": "Sistema de micrófono inalámbrico con receptor, ideal para karaoke, reuniones y eventos en vivo.",
+                "originalPrice": 59.99, "rating": 4.1, "reviewsCount": 700, "category": "Micrófonos de solapa",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61Nl-t0+JmL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71hLg9n3uGL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC015", "name": "TONOR TC-777 USB Condenser Microphone",
+                "description": "Micrófono de condensador USB plug & play con trípode, perfecto para podcasting, grabaciones y chat.",
+                "originalPrice": 39.99, "rating": 4.4, "reviewsCount": 1500, "category": "Micrófonos de estudio",
+                "images": [
                     "https://m.media-amazon.com/images/I/71Yf9+f-pLL._AC_SL1500_.jpg",
                     "https://m.media-amazon.com/images/I/71nO4M0uC1L._AC_SL1500_.jpg",
                     "https://m.media-amazon.com/images/I/71Q3d1F-7BL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "ACC010", "name": "Pop Filter for Microphones",
+                "description": "Filtro anti-pop de doble capa para micrófonos, mejora la calidad de la grabación eliminando ruidos de consonantes.",
+                "originalPrice": 9.99, "rating": 4.7, "reviewsCount": 2000, "category": "Accesorios",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61o-B2fB8UL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61iXN3z0KML._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "HP006", "name": "Sennheiser HD 206 Headphones",
+                "description": "Auriculares estéreo de alta calidad para escuchar música y monitoreo, con buena atenuación de ruido ambiental.",
+                "originalPrice": 34.95, "rating": 4.4, "reviewsCount": 8000, "category": "Audífonos",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71Y4Q9jL5BL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71j2x-xQ5FL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC016", "name": "Audio-Technica AT2020 Cardioid Condenser Microphone",
+                "description": "Micrófono de condensador de estudio ideal para grabación vocal y de instrumentos, con un patrón polar cardioide.",
+                "originalPrice": 99.00, "rating": 4.7, "reviewsCount": 10000, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71y7J6n0vNL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/712W1X5L-9L._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC017", "name": "Rode Lavalier GO Professional Lavalier Microphone",
+                "description": "Micrófono de solapa profesional para una captura de audio discreta y de alta calidad, perfecto para transmisiones y presentaciones.",
+                "originalPrice": 79.00, "rating": 4.6, "reviewsCount": 2000, "category": "Micrófonos de solapa",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61r5L6Q-zFL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61v0M4A-PXL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "ACC011", "name": "Shock Mount for Condenser Microphones",
+                "description": "Soporte de choque universal para micrófonos de condensador, reduce el ruido de vibraciones y manipulación.",
+                "originalPrice": 18.50, "rating": 4.4, "reviewsCount": 500, "category": "Accesorios",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61TfD1Z4mQL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61xR0pQ-mML._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "HP007", "name": "Audio-Technica ATH-M20x Professional Monitor Headphones",
+                "description": "Auriculares de monitoreo profesional con diseño circumaural que ofrece un excelente aislamiento de sonido.",
+                "originalPrice": 49.00, "rating": 4.3, "reviewsCount": 7000, "category": "Audífonos",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71B4994-W6L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71G1M4L-TGL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "INT004", "name": "Steinberg UR22C USB Audio Interface",
+                "description": "Interfaz de audio USB 3.0 con 2 entradas/2 salidas, calidad de audio de 32 bits/192 kHz, y soporte MIDI.",
+                "originalPrice": 189.99, "rating": 4.8, "reviewsCount": 3000, "category": "Interfaces / Mixers",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61z95W5m1CL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71N1+0+e7XL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC018", "name": "Zoom H1n Portable Recorder",
+                "description": "Grabadora de audio portátil estéreo compacta y fácil de usar, perfecta para músicos, periodistas y podcasters.",
+                "originalPrice": 99.99, "rating": 4.5, "reviewsCount": 4000, "category": "Micrófonos de solapa",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61kM5nK4VwL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61V1oK9xTML._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "ACC012", "name": "USB-C to USB-A Adapter Cable",
+                "description": "Cable adaptador USB-C a USB-A para conectar dispositivos modernos a puertos USB estándar.",
+                "originalPrice": 7.50, "rating": 4.2, "reviewsCount": 900, "category": "Accesorios",
+                "images": [
+                    "https://placehold.co/600x400/cccccc/333333?text=Adaptador+USB-C+1",
+                    "https://placehold.co/600x400/cccccc/333333?text=Adaptador+USB-C+2"
+                ]
+            },
+            {
+                "id": "HP008", "name": "Bose QuietComfort 35 II Noise-Cancelling Headphones",
+                "description": "Auriculares con cancelación de ruido líderes en la industria para una experiencia auditiva inmersiva y sin distracciones.",
+                "originalPrice": 249.00, "rating": 4.7, "reviewsCount": 60000, "category": "Audífonos",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71+R+z+k+3L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/81u2H0Jq-SL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC019", "name": "Rode VideoMic Go II Compact Shotgun Microphone",
+                "description": "Micrófono de escopeta compacto ideal para cámaras, smartphones y computadoras, con sonido direccional.",
+                "originalPrice": 99.00, "rating": 4.6, "reviewsCount": 1800, "category": "Micrófonos de solapa",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61Nl-t0+JmL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/611aE1h4NqL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "ACC013", "name": "Microphone Isolation Shield",
+                "description": "Escudo de aislamiento acústico plegable para micrófonos, reduce el ruido ambiental para grabaciones más limpias.",
+                "originalPrice": 65.00, "rating": 4.3, "reviewsCount": 400, "category": "Accesorios",
+                "images": [
+                    "https://placehold.co/600x400/cccccc/333333?text=Escudo+Aislamiento+1",
+                    "https://placehold.co/600x400/cccccc/333333?text=Escudo+Aislamiento+2"
                 ]
             }
         ];
@@ -763,6 +1109,12 @@
             }, 3000);
         }
 
+        // Función para imprimir el contenido del carrito
+        function printCartContent() {
+            window.print();
+        }
+
+
         // Inicialización de la página cuando el DOM está completamente cargado
         document.addEventListener('DOMContentLoaded', () => {
             // Cargar productos del localStorage o usar ejemplos
@@ -793,6 +1145,7 @@
             const cartModalOverlay = document.getElementById('cartModalOverlay');
             const closeCartModalBtn = document.getElementById('closeCartModal');
             const clearCartBtn = document.getElementById('clearCartBtn');
+            const printCartBtn = document.getElementById('printCartBtn'); // Nuevo botón de imprimir
 
             floatingCartBtn.addEventListener('click', () => {
                 cartModalOverlay.classList.add('open');
@@ -807,6 +1160,7 @@
                 }
             });
             clearCartBtn.addEventListener('click', clearCart);
+            printCartBtn.addEventListener('click', printCartContent); // Asignar evento al botón de imprimir
 
             loadCart(); // Cargar el carrito al iniciar la página
         });
