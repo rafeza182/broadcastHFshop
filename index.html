@@ -38,14 +38,20 @@
         }
         /* Estilo para el botón de categoría activo */
         .category-button.active {
-            @apply bg-purple-600 text-white;
+            @apply bg-purple-600 text-white border-b-2 border-purple-400; /* Línea en selección actual */
         }
         .category-button {
             transition: all 0.2s ease-in-out;
             position: relative;
             overflow: hidden;
+            background-color: #334155; /* Fondo más oscuro para botones de menú */
+            color: #e2e8f0; /* Texto claro */
         }
-        .category-button:hover::before {
+        .category-button:hover {
+            background-color: #475569; /* Un poco más claro al pasar el ratón */
+            color: #ffffff;
+        }
+        .category-button::before {
             content: '';
             position: absolute;
             top: 0;
@@ -115,7 +121,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.7); /* Fondo más oscuro */
+            background-color: rgba(0, 0, 0, 0.7); /* Fondo más oscuro y legible */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -192,16 +198,16 @@
 <body class="bg-slate-50 text-slate-800">
 
     <!-- Encabezado y Navegación -->
-    <header class="bg-white shadow-md p-4 sticky top-0 z-50">
+    <header class="bg-gray-900 shadow-md p-4 sticky top-0 z-50">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
-            <h1 class="text-3xl font-bold text-purple-700 mb-2 md:mb-0">ProAudio Catálogo</h1>
+            <h1 class="text-3xl font-bold text-white mb-2 md:mb-0">ProAudio Catálogo</h1>
             <nav class="flex flex-wrap justify-center md:justify-end gap-2 md:gap-4">
-                <button class="category-button px-4 py-2 rounded-lg text-slate-700 hover:bg-purple-100 hover:text-purple-700 transition duration-200" data-category="all">Todos</button>
-                <button class="category-button px-4 py-2 rounded-lg text-slate-700 hover:bg-purple-100 hover:text-purple-700 transition duration-200" data-category="Micrófonos de estudio">🎙 Micrófonos de estudio</button>
-                <button class="category-button px-4 py-2 rounded-lg text-slate-700 hover:bg-purple-100 hover:text-purple-700 transition duration-200" data-category="Micrófonos de solapa">🎤 Micrófonos de solapa</button>
-                <button class="category-button px-4 py-2 rounded-lg text-slate-700 hover:bg-purple-100 hover:text-purple-700 transition duration-200" data-category="Audífonos">🎧 Audífonos</button>
-                <button class="category-button px-4 py-2 rounded-lg text-slate-700 hover:bg-purple-100 hover:text-purple-700 transition duration-200" data-category="Interfaces / Mixers">🎚 Interfaces / Mixers</button>
-                <button class="category-button px-4 py-2 rounded-lg text-slate-700 hover:bg-purple-100 hover:text-purple-700 transition duration-200" data-category="Accesorios">⚙️ Accesorios</button>
+                <button class="category-button px-4 py-2 rounded-lg transition duration-200" data-category="all">Todos</button>
+                <button class="category-button px-4 py-2 rounded-lg transition duration-200" data-category="Micrófonos de estudio">🎙 Micrófonos de estudio</button>
+                <button class="category-button px-4 py-2 rounded-lg transition duration-200" data-category="Micrófonos de solapa">🎤 Micrófonos de solapa</button>
+                <button class="category-button px-4 py-2 rounded-lg transition duration-200" data-category="Audífonos">🎧 Audífonos</button>
+                <button class="category-button px-4 py-2 rounded-lg transition duration-200" data-category="Interfaces / Mixers">🎚 Interfaces / Mixers</button>
+                <button class="category-button px-4 py-2 rounded-lg transition duration-200" data-category="Accesorios">⚙️ Accesorios</button>
             </nav>
         </div>
     </header>
@@ -1056,7 +1062,7 @@
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'cart-item';
                     itemDiv.innerHTML = `
-                        <img src="${item.image}" alt="${item.name}" class="cart-item-image">
+                        <img src="${item.image}" alt="${item.name}" class="cart-item-image" onerror="this.src='https://placehold.co/60x60/cccccc/333333?text=Sin+Imagen';">
                         <div class="flex-grow">
                             <p class="font-semibold text-slate-800">${item.name}</p>
                             <p class="text-sm text-purple-600">$${item.price.toFixed(2)} c/u</p>
