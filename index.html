@@ -98,7 +98,7 @@
         .floating-cart-btn {
             position: fixed;
             bottom: 1.5rem; /* 24px */
-            right: 1.5rem; /* 24px */ /* CAMBIO A DERECHA */
+            right: 1.5rem; /* 24px */
             z-index: 1000;
             @apply bg-purple-700 text-white p-4 rounded-full shadow-lg flex items-center justify-center cursor-pointer;
             transition: transform 0.2s ease-in-out;
@@ -215,7 +215,6 @@
     <main class="container mx-auto p-6 mt-4">
         <!-- Sección del Catálogo de Productos -->
         <section>
-            <!-- Eliminado: <h2 class="text-2xl font-semibold mb-4 text-purple-700">Nuestro Catálogo</h2> -->
             <div id="productGrid" class="product-grid-container">
                 <!-- Aquí se renderizarán los productos -->
             </div>
@@ -280,6 +279,14 @@
 
         let currentProducts = []; // Almacenará los productos actualmente mostrados (ejemplo o cargados por JSON)
         let cartItems = []; // Almacenará los productos en el carrito
+
+        // Variables globales para los elementos del DOM del carrito
+        let cartItemCountElem;
+        let cartItemsListElem;
+        let emptyCartMessageElem;
+        let cartSubtotalElem;
+        let cartTaxElem;
+        let cartTotalElem;
 
         // Productos de ejemplo (solo se usan si no hay productos guardados en localStorage)
         const sampleProducts = [
@@ -956,43 +963,51 @@
                 expiresAt: expirationTime
             };
             localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(dataToStore));
+            console.log('Carrito guardado:', dataToStore); // DEBUG: Verificar lo que se guarda
             updateCartUI(); // Actualiza la UI después de guardar
         }
 
         // Carga el carrito de localStorage y verifica la expiración
         function loadCart() {
             const storedData = localStorage.getItem(CART_STORAGE_KEY);
+            console.log('Datos del carrito en localStorage al cargar:', storedData); // DEBUG: Verificar lo que se carga
             if (storedData) {
                 try {
                     const data = JSON.parse(storedData);
                     const now = new Date().getTime();
                     if (data.expiresAt && now < data.expiresAt) {
                         cartItems = data.items;
+                        console.log('Carrito cargado exitosamente:', cartItems); // DEBUG: Carrito cargado
                     } else {
                         // Carrito expirado, lo vaciamos
                         cartItems = [];
                         localStorage.removeItem(CART_STORAGE_KEY);
                         showNotification('Tu carrito ha sido vaciado por inactividad (más de 2 semanas).', 'info');
+                        console.log('Carrito expirado y vaciado.'); // DEBUG: Carrito expirado
                     }
                 } catch (e) {
                     console.error("Error al parsear el carrito de localStorage:", e);
                     cartItems = []; // Si hay un error, vaciar el carrito para evitar problemas
                     localStorage.removeItem(CART_STORAGE_KEY);
+                    showNotification('Error al cargar el carrito. Se ha vaciado para evitar problemas.', 'error');
                 }
             } else {
                 cartItems = [];
+                console.log('No hay datos de carrito en localStorage. Carrito inicializado vacío.'); // DEBUG: No hay datos
             }
             updateCartUI(); // Actualiza la UI después de cargar
         }
 
         // Añade un producto al carrito
         function addToCart(product) {
+            console.log('Intentando añadir producto al carrito:', product); // DEBUG: Producto a añadir
             // Asegúrate de usar el precio calculado para el carrito
             const itemPrice = calculatePrice(product.originalPrice);
 
             const existingItem = cartItems.find(item => item.id === product.id);
             if (existingItem) {
                 existingItem.quantity++;
+                console.log('Producto existente actualizado:', existingItem); // DEBUG: Producto existente
             } else {
                 cartItems.push({
                     id: product.id,
@@ -1002,6 +1017,7 @@
                     quantity: 1,
                     addedAt: new Date().getTime() // Fecha de adición para expiración
                 });
+                console.log('Nuevo producto añadido:', cartItems[cartItems.length - 1]); // DEBUG: Nuevo producto
             }
             saveCart();
             showNotification(`${product.name} añadido al carrito.`, 'success');
@@ -1009,6 +1025,7 @@
 
         // Actualiza la cantidad de un artículo en el carrito
         function updateCartItemQuantity(productId, newQuantity) {
+            console.log(`Actualizando cantidad para ${productId} a ${newQuantity}`); // DEBUG: Actualizando cantidad
             const itemIndex = cartItems.findIndex(item => item.id === productId);
             if (itemIndex !== -1) {
                 if (newQuantity <= 0) {
@@ -1017,12 +1034,14 @@
                     cartItems[itemIndex].quantity = newQuantity;
                     cartItems[itemIndex].addedAt = new Date().getTime(); // Refrescar timestamp al actualizar
                     saveCart();
+                    console.log('Cantidad actualizada:', cartItems[itemIndex]); // DEBUG: Cantidad actualizada
                 }
             }
         }
 
         // Elimina un producto del carrito
         function removeFromCart(productId) {
+            console.log('Removiendo producto del carrito:', productId); // DEBUG: Removiendo
             cartItems = cartItems.filter(item => item.id !== productId);
             saveCart();
             showNotification('Producto eliminado del carrito.', 'info');
@@ -1030,6 +1049,7 @@
 
         // Vacía todo el carrito
         function clearCart() {
+            console.log('Vaciando carrito.'); // DEBUG: Vaciando
             cartItems = [];
             saveCart();
             showNotification('Carrito vaciado.', 'info');
@@ -1037,25 +1057,29 @@
 
         // Actualiza la interfaz de usuario del carrito
         function updateCartUI() {
-            const cartItemCount = document.getElementById('cartItemCount');
-            const cartItemsList = document.getElementById('cartItemsList');
-            const emptyCartMessage = document.getElementById('emptyCartMessage');
-            const cartSubtotalElem = document.getElementById('cartSubtotal');
-            const cartTaxElem = document.getElementById('cartTax');
-            const cartTotalElem = document.getElementById('cartTotal');
+            // Asegurarse de que todos los elementos existan. Si no, loguear un error y salir.
+            if (!cartItemCountElem || !cartItemsListElem || !emptyCartMessageElem || !cartSubtotalElem || !cartTaxElem || !cartTotalElem) {
+                console.error("Error: Uno o más elementos del carrito no se encontraron en el DOM al intentar actualizar la UI. Asegúrate de que el DOM esté completamente cargado y los IDs sean correctos.");
+                return; // Salir de la función si los elementos no están listos
+            }
+
+            console.log('Actualizando UI del carrito. Items actuales:', cartItems); // DEBUG: Antes de actualizar UI
 
             // Actualizar el contador del carrito flotante
             const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-            cartItemCount.textContent = totalItems;
+            cartItemCountElem.textContent = totalItems;
+            console.log('Contador del carrito actualizado a:', totalItems); // DEBUG: Contador
 
             // Renderizar la lista de elementos en el modal
-            cartItemsList.innerHTML = ''; // Limpiar lista
+            cartItemsListElem.innerHTML = ''; // Limpiar lista
             let subtotal = 0;
 
             if (cartItems.length === 0) {
-                emptyCartMessage.classList.remove('hidden');
+                emptyCartMessageElem.classList.remove('hidden');
+                console.log('Carrito está vacío. Mostrando mensaje.'); // DEBUG: Carrito vacío
             } else {
-                emptyCartMessage.classList.add('hidden');
+                emptyCartMessageElem.classList.add('hidden');
+                console.log('Renderizando items del carrito...'); // DEBUG: Renderizando
                 cartItems.forEach(item => {
                     subtotal += item.price * item.quantity;
 
@@ -1068,13 +1092,13 @@
                             <p class="text-sm text-purple-600">$${item.price.toFixed(2)} c/u</p>
                         </div>
                         <div class="flex items-center gap-2 quantity-control">
-                            <button onclick="updateCartItemQuantity('${item.id}', ${item.quantity - 1})">-</button>
+                            <button onclick="updateCartItemQuantity('${item.id}', ${item.quantity - 1})" class="bg-slate-200 text-slate-800 px-2 py-1 rounded-md hover:bg-slate-300">-</button>
                             <span class="font-medium">${item.quantity}</span>
-                            <button onclick="updateCartItemQuantity('${item.id}', ${item.quantity + 1})">+</button>
+                            <button onclick="updateCartItemQuantity('${item.id}', ${item.quantity + 1})" class="bg-slate-200 text-slate-800 px-2 py-1 rounded-md hover:bg-slate-300">+</button>
                             <button onclick="removeFromCart('${item.id}')" class="ml-2 text-red-500 hover:text-red-700 text-lg">🗑</button>
                         </div>
                     `;
-                    cartItemsList.appendChild(itemDiv);
+                    cartItemsListElem.appendChild(itemDiv);
                 });
             }
 
@@ -1084,6 +1108,7 @@
             cartSubtotalElem.textContent = `$${subtotal.toFixed(2)}`;
             cartTaxElem.textContent = `$${tax.toFixed(2)}`;
             cartTotalElem.textContent = `$${total.toFixed(2)}`;
+            console.log('Subtotal:', subtotal.toFixed(2), 'Impuesto:', tax.toFixed(2), 'Total:', total.toFixed(2)); // DEBUG: Totales
         }
 
 
@@ -1145,6 +1170,14 @@
             categoryButtons.forEach(button => {
                 button.addEventListener('click', handleCategoryClick);
             });
+
+            // --- Inicialización de variables globales del DOM para el Carrito ---
+            cartItemCountElem = document.getElementById('cartItemCount');
+            cartItemsListElem = document.getElementById('cartItemsList');
+            emptyCartMessageElem = document.getElementById('emptyCartMessage');
+            cartSubtotalElem = document.getElementById('cartSubtotal');
+            cartTaxElem = document.getElementById('cartTax');
+            cartTotalElem = document.getElementById('cartTotal');
 
             // --- Inicialización y Eventos del Carrito ---
             const floatingCartBtn = document.getElementById('floatingCartBtn');
