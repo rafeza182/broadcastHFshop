@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>radiopro.shop</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css" />
+  <style>
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+    }
+    .gallery {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .gallery img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+    }
+    .stars {
+      color: gold;
+    }
+    .price {
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    .category-title {
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <nav class="container-fluid">
+    <ul><li><strong>radiopro.shop</strong></li></ul>
+    <ul>
+      <li><a href="#micros">Micrófonos</a></li>
+      <li><a href="#audifonos">Audífonos</a></li>
+      <li><a href="#interfaces">Interfaces</a></li>
+      <li><a href="cart.html" role="button">🛒 Carrito</a></li>
+    </ul>
+  </nav>
+  <main class="container">
+    <!-- Aquí se insertan los productos dinámicamente -->
+    <div id="product-catalog"></div>
+  </main>
+  <section aria-label="Suscripción">
+    <div class="container">
+      <article>
+        <hgroup>
+          <h2>¿Te gusta el audio profesional?</h2>
+          <h3>Suscríbete para recibir novedades</h3>
+        </hgroup>
+        <form class="grid">
+          <input type="text" id="firstname" name="firstname" placeholder="Tu nombre" aria-label="Nombre" required />
+          <input type="email" id="email" name="email" placeholder="Tu correo electrónico" aria-label="Correo" required />
+          <button type="submit" onclick="event.preventDefault()">Suscribirme</button>
+        </form>
+      </article>
+    </div>
+  </section>
+  <footer class="container">
+    <small>
+      <a href="#">Términos</a> • <a href="#">Privacidad</a>
+    </small>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="products.js"></script>
+</body>
+</html>
