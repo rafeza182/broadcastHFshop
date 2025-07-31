@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>radiopro.shop</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css" />
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
+</head>
+<body>
+  <nav class="container-fluid sticky-nav">
+    <ul>
+      <li><strong><img src="logo.svg" alt="logo" class="logo-icon"> radiopro.shop</strong></li>
+    </ul>
+    <ul class="nav-links">
+      <li><a href="#estudio" class="nav-item">🎙 Estudio</a></li>
+      <li><a href="#solapa" class="nav-item">🎙 Solapa</a></li>
+      <li><a href="#audifonos" class="nav-item">🎧 Audífonos</a></li>
+      <li><a href="#interfaces" class="nav-item">🎚 Interfaces</a></li>
+      <li><a href="#accesorios" class="nav-item">⚙️ Accesorios</a></li>
+    </ul>
+  </nav>
+
+  <main class="container">
+    <div id="product-catalog" class="grid3"></div>
+  </main>
+
+  <a href="cart.html" class="floating-cart">
+    🛒 <span id="cart-count">0</span>
+  </a>
+
+  <footer class="container">
+    <small>
+      <a href="#">Términos</a> • <a href="#">Privacidad</a>
+    </small>
+  </footer>
+
+  <script src="products.js"></script>
+</body>
+</html>

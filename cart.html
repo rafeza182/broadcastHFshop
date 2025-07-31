@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Carrito - radiopro.shop</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css" />
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav class="container-fluid sticky-nav">
+    <ul><li><strong><img src="logo.svg" alt="logo" class="logo-icon"> radiopro.shop</strong></li></ul>
+    <ul><li><a href="index.html">Volver al Catálogo</a></li></ul>
+  </nav>
+
+  <main class="container">
+    <h2>Carrito</h2>
+    <table id="cart-table">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Cantidad</th>
+          <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p id="impuesto"></p>
+    <p id="total"></p>
+    <button onclick="vaciarCarrito()">Vaciar carrito</button>
+    <button onclick="window.print()">Imprimir</button>
+  </main>
+
+  <script>
+    const carrito = JSON.parse(localStorage.getItem('carrito') || '{}');
+    const tbody = document.querySelector("#cart-table tbody");
+    let total = 0;
+
+    Object.keys(carrito).forEach(key => {
+      const item = carrito[key];
+      const subtotal = item.precio * item.cantidad;
+      total += subtotal;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${item.nombre}</td><td>${item.cantidad}</td><td>$${subtotal.toFixed(2)}</td>`;
+      tbody.appendChild(tr);
+    });
+
+    const impuesto = total * 0.09;
+    const totalFinal = total + impuesto;
+
+    document.getElementById("impuesto").innerText = `Impuesto: $${impuesto.toFixed(2)}`;
+    document.getElementById("total").innerText = `Total: $${totalFinal.toFixed(2)}`;
+
+    function vaciarCarrito() {
+      localStorage.removeItem('carrito');
+      location.reload();
+    }
+  </script>
+</body>
+</html>

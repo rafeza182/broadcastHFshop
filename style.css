@@ -1,0 +1,48 @@
+body {
+  background-color: #f9f9f9;
+}
+.logo-icon {
+  height: 1.4em;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+}
+.sticky-nav {
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 100;
+  border-bottom: 1px solid #eee;
+}
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+article {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  padding: 1.5rem;
+  transition: transform 0.2s;
+}
+article:hover {
+  transform: translateY(-5px);
+}
+.floating-cart {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background: #000;
+  color: #fff;
+  padding: 1rem 1.2rem;
+  border-radius: 100px;
+  font-size: 1.2rem;
+  text-decoration: none;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+  z-index: 999;
+}
+.nav-item.active {
+  background: #e5e5e5;
+  border-radius: 5px;
+  padding: 0.3rem 0.7rem;
+}
