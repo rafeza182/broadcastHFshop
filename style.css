@@ -1,23 +1,45 @@
+/* styles.css */
+
 body {
   background-color: #f9f9f9;
 }
+
+main.container {
+  padding-bottom: 6rem; /* para que no tape el carrito flotante */
+}
+
 .logo-icon {
   height: 1.4em;
   vertical-align: middle;
   margin-right: 0.5rem;
 }
-.sticky-nav {
+
+nav.container-fluid {
   position: sticky;
   top: 0;
-  background-color: white;
-  z-index: 100;
+  z-index: 999;
+  background: #fff;
   border-bottom: 1px solid #eee;
+  transition: all 0.3s ease;
 }
+
+nav ul a {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: background 0.3s ease;
+}
+
+nav ul a.active {
+  background-color: #ececec;
+  font-weight: bold;
+}
+
 .grid3 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 2rem;
 }
+
 article {
   background: white;
   border-radius: 12px;
@@ -25,24 +47,52 @@ article {
   padding: 1.5rem;
   transition: transform 0.2s;
 }
+
 article:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
 }
+
+article img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.price {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #222;
+}
+
+.stars {
+  color: #ffc107;
+  margin-bottom: 0.5rem;
+}
+
 .floating-cart {
   position: fixed;
   bottom: 1.5rem;
   right: 1.5rem;
   background: #000;
   color: #fff;
-  padding: 1rem 1.2rem;
+  padding: 0.9rem 1.2rem;
   border-radius: 100px;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
+  font-weight: bold;
   text-decoration: none;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-  z-index: 999;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 1000;
 }
-.nav-item.active {
-  background: #e5e5e5;
-  border-radius: 5px;
-  padding: 0.3rem 0.7rem;
+
+#cart-count {
+  background-color: crimson;
+  color: white;
+  font-size: 0.8rem;
+  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 50%;
+  display: inline-block;
 }
