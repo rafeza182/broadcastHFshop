@@ -40,37 +40,7 @@
         .category-button.active {
             @apply bg-purple-600 text-white border-b-2 border-purple-400; /* Línea en selección actual */
         }
-        .category-button {
-            transition: all 0.2s ease-in-out;
-            position: relative;
-            overflow: hidden;
-            background-color: #334155; /* Fondo más oscuro para botones de menú */
-            color: #e2e8f0; /* Texto claro */
-            padding: 0.75rem 1.5rem; /* Más padding para que sea más grande */
-            font-size: 1.125rem; /* Tailwind: text-lg */
-            font-weight: 500; /* Tailwind: font-medium */
-        }
-        .category-button:hover {
-            background-color: #475569; /* Un poco más claro al pasar el ratón */
-            color: #ffffff;
-        }
-        .category-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.3s ease-in-out; /* Animación más suave */
-        }
-        .category-button:hover::before {
-            transform: scaleX(1);
-        }
         
-        /* Contenedor de la cuadrícula de productos para scroll horizontal en móvil */
         .product-grid-container {
             overflow-x: auto;
             white-space: nowrap; /* Evita que los elementos se envuelvan */
@@ -165,11 +135,20 @@
 
 
 .menu-categorias {
+  /* Habilita flexbox para una fila */
+  display: flex;
+  /* Permite que los botones se envuelvan en pantallas pequeñas */
+  flex-wrap: wrap;
+  /* Espacio entre los botones */
+  gap: 0.75rem; 
+  /* Centra los botones en la fila */
+  justify-content: center;
+  
   background: rgba(30, 41, 59, 0.5); /* Slate con transparencia */
   backdrop-filter: blur(12px);
   border-radius: 1rem;
   padding: 1rem;
-  max-width: 1200px;
+  max-width: auto;
   margin: 0 auto;
   margin-top: 1.5rem;
 }
@@ -185,6 +164,9 @@
   transition: all 0.3s ease-in-out;
   box-shadow: inset 0 0 0 0 transparent;
   backdrop-filter: blur(8px);
+  flex-grow: 0; /* Asegura que los botones no se estiren */
+  flex-shrink: 0; /* Asegura que los botones no se encojan */
+  flex-basis: auto; /* Permite que el ancho del botón se ajuste al contenido */
 }
 
 .categoria-btn:hover {
@@ -202,7 +184,12 @@
   transform: scale(1.05);
 }
 
-
+@media (min-width: 1024px) { /* Por ejemplo, para pantallas de escritorio */
+  .menu-categorias {
+    flex-wrap: nowrap; /* Fuerza a que no se envuelvan los elementos */
+    justify-content: flex-start; /* Opcional: alinea los botones a la izquierda */
+  }
+}
 
 
     </style>
