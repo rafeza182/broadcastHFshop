@@ -1,41 +1,1118 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>radiopro.shop</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css" />
- <link rel="stylesheet" href="styles.css">
-  <link rel="icon" type="image/svg+xml" href="logo.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radio Pro Shop</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Importar fuente Inter */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Tailwind: bg-slate-50 */
+            color: #1e293b; /* Tailwind: text-slate-800 */
+        }
+        /* Estilo para las tarjetas de producto */
+        .product-card {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease-in-out;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        /* Estilo para las imágenes en la galería */
+        .image-gallery img {
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+        }
+        .image-gallery img:hover {
+            transform: scale(1.05);
+        }
+        /* Alineación de estrellas */
+        .star-rating svg {
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 2px;
+        }
+        /* Estilo para el botón de categoría activo */
+        .category-button.active {
+            @apply bg-purple-600 text-white border-b-2 border-purple-400; /* Línea en selección actual */
+        }
+        .category-button {
+            transition: all 0.2s ease-in-out;
+            position: relative;
+            overflow: hidden;
+            background-color: #334155; /* Fondo más oscuro para botones de menú */
+            color: #e2e8f0; /* Texto claro */
+            padding: 0.75rem 1.5rem; /* Más padding para que sea más grande */
+            font-size: 1.125rem; /* Tailwind: text-lg */
+            font-weight: 500; /* Tailwind: font-medium */
+        }
+        .category-button:hover {
+            background-color: #475569; /* Un poco más claro al pasar el ratón */
+            color: #ffffff;
+        }
+        .category-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease-in-out; /* Animación más suave */
+        }
+        .category-button:hover::before {
+            transform: scaleX(1);
+        }
+        
+        /* Contenedor de la cuadrícula de productos para scroll horizontal en móvil */
+        .product-grid-container {
+            overflow-x: auto;
+            white-space: nowrap; /* Evita que los elementos se envuelvan */
+            -webkit-overflow-scrolling: touch; /* Desplazamiento suave en iOS */
+        }
+        .product-grid-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        .product-grid-container::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1; /* Tailwind: bg-slate-300 */
+            border-radius: 4px;
+        }
+        .product-grid-container::-webkit-scrollbar-track {
+            background-color: #f1f5f9; /* Tailwind: bg-slate-100 */
+        }
+        /* Para pantallas más grandes, mostrar como una cuadrícula */
+        @media (min-width: 640px) { /* sm breakpoint */
+            .product-grid-container {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 1.5rem; /* Tailwind: gap-6 */
+                overflow-x: visible;
+                white-space: normal;
+            }
+        }
+
+        /* Estilos para el carrito flotante */
+        .floating-cart-btn {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 1000;
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(to right, #7e22ce, #9333ea); /* degradado púrpura */
+    color: white;
+    border: 3px solid white;
+    border-radius: 9999px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.floating-cart-btn {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 1000;
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(to right, #7e22ce, #9333ea);
+  color: white;
+  border: 3px solid white;
+  border-radius: 9999px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.floating-cart-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+}
+
+        .cart-icon {
+    width: 36px;
+    height: 36px;
+}
+
+     .cart-count {
+  position: absolute;
+  top: 0.5rem;
+  left: 1.25rem;
+  background-color: #dc2626; /* rojo-600 */
+  color: white;
+  font-size: 0.75rem; /* text-xs */
+  font-weight: bold;
+  width: 1.25rem; /* 20px */
+  height: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  box-shadow: 0 0 0 2px white;
+}
+
+
+
+
+.menu-categorias {
+  background: rgba(30, 41, 59, 0.5); /* Slate con transparencia */
+  backdrop-filter: blur(12px);
+  border-radius: 1rem;
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  margin-top: 1.5rem;
+}
+
+.categoria-btn {
+  padding: 0.75rem 1rem;
+  background-color: rgba(148, 163, 184, 0.1); /* fondo claro translúcido */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  color: #e2e8f0;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease-in-out;
+  box-shadow: inset 0 0 0 0 transparent;
+  backdrop-filter: blur(8px);
+}
+
+.categoria-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.categoria-btn.active {
+  background: linear-gradient(to right, #7e22ce, #9333ea);
+  color: white;
+  font-weight: 600;
+  border: none;
+  box-shadow: 0 0 12px rgba(147, 51, 234, 0.6);
+  transform: scale(1.05);
+}
+
+
+
+
+    </style>
 </head>
-<body>
-  <nav class="container-fluid sticky-nav">
-    <ul>
-      <li><strong><img src="logo.svg" alt="logo" class="logo-icon"> radiopro.shop</strong></li>
-    </ul>
-    <ul class="nav-links">
-      <li><a href="#estudio" class="nav-item">🎙 Estudio</a></li>
-      <li><a href="#solapa" class="nav-item">🎙 Solapa</a></li>
-      <li><a href="#audifonos" class="nav-item">🎧 Audífonos</a></li>
-      <li><a href="#interfaces" class="nav-item">🎚 Interfaces</a></li>
-      <li><a href="#accesorios" class="nav-item">⚙️ Accesorios</a></li>
-    </ul>
-  </nav>
+<body class="bg-slate-50 text-slate-800">
 
-  <main class="container">
-    <div id="product-catalog" class="grid3"></div>
-  </main>
+    <!-- Encabezado y Navegación -->
+    <header class="bg-gray-900 shadow-md p-4 sticky top-0 z-50">
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
+            <h1 class="text-3xl font-bold text-white mb-2 md:mb-0 flex items-center gap-2">
+                📻 Radio Pro Shop
+            </h1>
+            <nav class="menu-categorias mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 px-4 text-center">
+  <button class="categoria-btn" data-category="all">Todos</button>
+  <button class="categoria-btn" data-category="Micrófonos de estudio">🎙 Estudio</button>
+  <button class="categoria-btn" data-category="Micrófonos de solapa">🎤 Solapa</button>
+  <button class="categoria-btn" data-category="Audífonos">🎧 Audífonos</button>
+  <button class="categoria-btn" data-category="Interfaces / Mixers">🎚 Mixers</button>
+  <button class="categoria-btn" data-category="Accesorios">⚙️ Accesorios</button>
+</nav>
 
-  <a href="cart.html" class="floating-cart">
-    🛒 <span id="cart-count">0</span>
-  </a>
+        </div>
+    </header>
 
-  <footer class="container">
-    <small>
-      <a href="#">Términos</a> • <a href="#">Privacidad</a>
-    </small>
-  </footer>
+    <main class="container mx-auto p-6 mt-4">
+        <!-- Sección del Catálogo de Productos -->
+        <section>
+            <div id="productGrid" class="product-grid-container">
+                <!-- Aquí se renderizarán los productos -->
+            </div>
+            <p id="noProductsMessage" class="hidden text-center text-slate-600 mt-8">No hay productos disponibles en esta categoría.</p>
+        </section>
+    </main>
 
-  <script src="products.js"></script>
+   <!-- Carrito Flotante -->
+<a href="cart.html" id="floatingCartBtn" class="floating-cart-btn">
+  <!-- Icono de carrito moderno con contador integrado -->
+  <div class="relative w-9 h-9">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full text-white" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="9" cy="21" r="1" />
+      <circle cx="20" cy="21" r="1" />
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+    </svg>
+    <span id="cartItemCount"
+      class="absolute -top-1 right-0 bg-red-600 text-white text-[11px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow">
+      0
+    </span>
+  </div>
+</a>
+
+    <!-- Pie de Página -->
+    <footer class="bg-white shadow-inner p-6 mt-8 text-center text-slate-600">
+        <p>&copy; 2024 Radio Pro Shop. Todos los derechos reservados.</p>
+        <p>Contacto: <a href="mailto:info@proaudio.com" class="text-purple-600 hover:underline">info@proaudio.com</a></p>
+        <p class="mt-2 text-sm">
+            <a href="manage_products.html" class="text-slate-500 hover:underline">Gestionar Productos</a>
+        </p>
+    </footer>
+
+    <script>
+        const PRODUCT_STORAGE_KEY = 'proaudio_catalog_products';
+        const CART_STORAGE_KEY = 'proaudio_cart';
+        const CART_EXPIRATION_DAYS = 14; // Carrito se borra después de 14 días
+        const TAX_RATE = 0.09; // 9% de impuesto
+
+        let currentProducts = []; // Almacenará los productos actualmente mostrados (ejemplo o cargados por JSON)
+        let cartItems = []; // Almacenará los productos en el carrito
+
+        // Variables globales para los elementos del DOM del carrito
+        let cartItemCountElem; // Solo necesitamos este en esta página para el contador flotante
+
+        // Productos de ejemplo (solo se usan si no hay productos guardados en localStorage)
+        const sampleProducts = [
+            {
+                "id": "ACC001", "name": "JOMLEY Balanced XLR to TRRS Converter Cable",
+                "description": "Cable adaptador XLR macho a 3.5mm TRRS hembra, ideal para conectar micrófonos XLR a dispositivos móviles y cámaras.",
+                "originalPrice": 12.99, "rating": 4.3, "reviewsCount": 85, "category": "Accesorios",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61lY4r6c2CL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61gXbN74m0L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61tC5E3W6YL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "ACC002", "name": "Ancable Mini Jack to XLR Microphone Converter",
+                "description": "Adaptador de 3.5mm a XLR para micrófonos, compatible con cámaras y videocámaras.",
+                "originalPrice": 9.99, "rating": 4.1, "reviewsCount": 120, "category": "Accesorios",
+                "images": [
+                    "https://m.media-amazon.com/images/I/516e8P2d2KL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/51w+S6K5gVL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/51x+N3-4+ZL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "ACC003", "name": "Rode VXLR Female TRS to XLR Male Adapter",
+                "description": "Adaptador RØDE VXLR que convierte alimentación phantom de 48V a alimentación plug-in de 2-5V para micrófonos TRS.",
+                "originalPrice": 19.00, "rating": 4.7, "reviewsCount": 700, "category": "Accesorios",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61u9iB0gB7L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61-dJ34G8xL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61J64M5T3rL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "ACC004", "name": "Mini Jack TRS Female to XLR Male Adapter (VideoMic)",
+                "description": "Adaptador compacto TRS hembra a XLR macho, especialmente diseñado para micrófonos RØDE VideoMic.",
+                "originalPrice": 16.99, "rating": 4.5, "reviewsCount": 150, "category": "Accesorios",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61L-PzSgHwL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61t5T-e0kDL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61E9p4z8XgL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "ACC005", "name": "RØDE TRS-XLR Adaptor VXLR Pro",
+                "description": "Adaptador RØDE VXLR Pro con transformador de aislamiento para conectar micrófonos TRS a entradas XLR.",
+                "originalPrice": 39.00, "rating": 4.8, "reviewsCount": 300, "category": "Accesorios",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61u4P8U7BfL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61P0Q8G9HUL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/617n-Z2W47L._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC001", "name": "Rode Microphones Wireless GO II",
+                "description": "Sistema de micrófono inalámbrico ultracompacto de doble canal ideal para entrevistas y vlogs.",
+                "originalPrice": 299.00, "rating": 4.8, "reviewsCount": 3500, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61Nl-t0+JmL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/611aE1h4NqL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71hLg9n3uGL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/719F8D06gEL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC002", "name": "HyperX QuadCast S - Micrófono Condensador RGB",
+                "description": "Micrófono USB para juegos y streaming con impresionantes efectos de iluminación RGB dinámicos y cuatro patrones polares.",
+                "originalPrice": 159.99, "rating": 4.7, "reviewsCount": 8900, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71r9fU5kI7L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/7123+Y4a-ML._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/714h8y1J-YL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/711qjS0JcUL._AC_SL1500_.jpg",
+                ]
+            },
+            {
+                "id": "MIC003", "name": "Studio-quality USB Condenser Microphone",
+                "description": "Micrófono de condensador USB de calidad de estudio para podcasting, producción de música y grabación de instrumentos.",
+                "originalPrice": 69.99, "rating": 4.5, "reviewsCount": 1200, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71r5h8m+z2L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71r-R2m3fWL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71z0o3m4pZL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC004", "name": "HyperX SoloCast - Micrófono USB para Streaming",
+                "description": "Micrófono USB compacto para streaming y podcasting con función de silenciamiento táctil.",
+                "originalPrice": 49.99, "rating": 4.6, "reviewsCount": 2500, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61c8rJ0a4oL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61Nl-t0+JmL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61s8Y7w2RGL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "ACC006", "name": "TONOR Adjustable Microphone Arm with LED",
+                "description": "Brazo de micrófono ajustable con luces LED, gestión de cables y soporte de abrazadera de escritorio, ideal para streaming.",
+                "originalPrice": 45.99, "rating": 4.6, "reviewsCount": 950, "category": "Accesorios",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71F7o8C5nCL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71R2o5f-3JL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71-P4e5hNKL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "ACC007", "name": "Microphone Arm Stand with Pop Filter",
+                "description": "Soporte de brazo de micrófono de escritorio con filtro anti-pop y soporte de choque para grabación de audio.",
+                "originalPrice": 25.99, "rating": 4.4, "reviewsCount": 700, "category": "Accesorios",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61TfD1Z4mQL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61xR0pQ-mML._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61iXN3z0KML._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC005", "name": "Fifine K669B USB Microphone",
+                "description": "Micrófono USB plug and play ideal para grabar voces, podcasts y transmisiones en vivo.",
+                "originalPrice": 39.99, "rating": 4.5, "reviewsCount": 2100, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61y+2x-9bNL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61xJ2p-9LcL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61kF-4l5wzL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC006", "name": "MAONO AU-A04T USB Microphone",
+                "description": "Micrófono de condensador USB con brazo articulado y filtro pop, ideal para home studio.",
+                "originalPrice": 45.99, "rating": 4.3, "reviewsCount": 1800, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71R1s+i5M9L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71lC5n4gS5L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71Y+z-1l6dL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC007", "name": "Blue Yeti USB Microphone",
+                "description": "Micrófono USB versátil con múltiples patrones polares, ideal para podcasting, streaming y grabaciones de música.",
+                "originalPrice": 129.99, "rating": 4.7, "reviewsCount": 75000, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71Lg1FzJv9L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71h3zJ7fVBL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/717v2fV911L._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC008", "name": "MAONO PM401 USB Condenser Microphone",
+                "description": "Micrófono de condensador profesional con chipset de sonido avanzado para grabación de voz clara.",
+                "originalPrice": 59.99, "rating": 4.4, "reviewsCount": 3200, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/713Yf5P-JCL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71V2x-C2pML._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71nO4M0uC1L._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC009", "name": "TONOR Q9 USB Microphone",
+                "description": "Kit de micrófono USB plug and play con trípode y filtro pop para grabación y streaming.",
+                "originalPrice": 49.99, "rating": 4.3, "reviewsCount": 1900, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71Yf9+f-pLL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71nO4M0uC1L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71Q3d1F-7BL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC010", "name": "Neewer NW-700 Condenser Microphone",
+                "description": "Micrófono de condensador profesional Neewer con kit de montaje para estudio de grabación.",
+                "originalPrice": 29.99, "rating": 4.2, "reviewsCount": 1100, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71yB2P-JdQL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71Z-D3C-FGL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/710eE-P3JDL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC011", "name": "MAONO AU-PM461TR USB Microphone",
+                "description": "Micrófono USB portátil con trípode, ideal para grabar voces y videollamadas.",
+                "originalPrice": 24.99, "rating": 4.0, "reviewsCount": 800, "category": "Micrófonos de solapa",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61kM5nK4VwL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61V1oK9xTML._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61J0K2H3zUL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC012", "name": "Shure MV7 USB/XLR Podcast Microphone",
+                "description": "Micrófono híbrido USB/XLR de Shure, optimizado para podcasting y grabación de voz con calidad profesional.",
+                "originalPrice": 249.00, "rating": 4.9, "reviewsCount": 6500, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71W-u2sLhML._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71N-2l-YyEL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71+0M2Q-wRL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "HP001", "name": "OneOdio Pro-C Over Ear Headphones",
+                "description": "Auriculares supraaurales con sonido de alta fidelidad, ideales para DJ y monitoreo profesional.",
+                "originalPrice": 49.99, "rating": 4.5, "reviewsCount": 3000, "category": "Audífonos",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71z7j1w+HCL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/81x9C3b6n4L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/81u2H0Jq-SL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "HP002", "name": "HyperX Cloud II Gaming Headset",
+                "description": "Auriculares para juegos con sonido envolvente virtual 7.1, micrófono con cancelación de ruido y comodidad premium.",
+                "originalPrice": 79.99, "rating": 4.6, "reviewsCount": 50000, "category": "Audífonos",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71W-u2sLhML._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71N-2l-YyEL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71+0M2Q-wRL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71z9X-g-LXL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "HP003", "name": "Philips SHP9500 HiFi Headphones",
+                "description": "Auriculares de alta fidelidad con diseño de respaldo abierto, ofrecen un sonido natural y claro para audiófilos.",
+                "originalPrice": 74.99, "rating": 4.7, "reviewsCount": 12000, "category": "Audífonos",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71x4uK3Tf1L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71w8N4rXqWL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71k1N2s0XdL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "HP004", "name": "OneOdio Monitor 80 Headphones",
+                "description": "Auriculares de monitoreo de estudio con controladores de alta resolución, diseñados para mezclar y masterizar.",
+                "originalPrice": 89.99, "rating": 4.6, "reviewsCount": 4500, "category": "Audífonos",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71k1N2s0XdL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71w8N4rXqWL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71x4uK3Tf1L._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "HP005", "name": "Sony MDR7506 Professional Headphones",
+                "description": "Auriculares de estudio cerrados, legendarios por su sonido preciso y aislamiento, ideales para monitoreo de audio.",
+                "originalPrice": 99.99, "rating": 4.8, "reviewsCount": 45000, "category": "Audífonos",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71z7j1w+HCL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/81x9C3b6n4L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/81u2H0Jq-SL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71+R+z+k+3L._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "INT001", "name": "Behringer UMC202HD Audio Interface",
+                "description": "Interfaz de audio USB de 2 entradas/2 salidas con preamplificadores MIDAS de alta calidad para grabación.",
+                "originalPrice": 129.00, "rating": 4.6, "reviewsCount": 10000, "category": "Interfaces / Mixers",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71-Lg8f7HRL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/617n-J2V4JL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61kG+4+sB1L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/7123+A-vL2L._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "INT002", "name": "Focusrite Scarlett 2i2 3rd Gen",
+                "description": "Interfaz de audio USB de 2 entradas/2 salidas, ideal para músicos y podcasters con preamplificadores de micrófono mejorados.",
+                "originalPrice": 179.99, "rating": 4.7, "reviewsCount": 15000, "category": "Interfaces / Mixers",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61M-WcT05XL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61z95W5m1CL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71N1+0+e7XL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/618xQ2rXWnL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "INT003", "name": "MaonoCaster Lite AU-AM200 Mixer",
+                "description": "Consola de mezclado de podcast portátil con interfaz de audio para streaming en vivo, grabación y radio.",
+                "originalPrice": 89.99, "rating": 4.4, "reviewsCount": 2500, "category": "Interfaces / Mixers",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61L+7XQ-Q0L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61R-S8-G0L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61T-Q2C-P0L._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "ACC008", "name": "Adjustable Studio Monitor Speaker Stands (Pair)",
+                "description": "Soportes ajustables para monitores de estudio, diseñados para optimizar el sonido en tu espacio de trabajo.",
+                "originalPrice": 59.99, "rating": 4.5, "reviewsCount": 600, "category": "Accesorios",
+                "images": [
+                    "https://placehold.co/600x400/cccccc/333333?text=Soportes+Monitor+1",
+                    "https://placehold.co/600x400/cccccc/333333?text=Soportes+Monitor+2"
+                ]
+            },
+            {
+                "id": "ACC009", "name": "Professional XLR Cable (20ft)",
+                "description": "Cable XLR balanceado de 20 pies, ideal para micrófonos, interfaces y otros equipos de audio.",
+                "originalPrice": 14.99, "rating": 4.6, "reviewsCount": 1500, "category": "Accesorios",
+                "images": [
+                    "https://placehold.co/600x400/cccccc/333333?text=Cable+XLR+1",
+                    "https://placehold.co/600x400/cccccc/333333?text=Cable+XLR+2"
+                ]
+            },
+            {
+                "id": "MIC013", "name": "Rode NT-USB Mini Studio Microphone",
+                "description": "Micrófono USB compacto de calidad de estudio, ideal para grabaciones en casa, podcasting y streaming.",
+                "originalPrice": 99.00, "rating": 4.7, "reviewsCount": 4000, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/619eU3z-DVL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/619eU3z-DVL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71Lg1FzJv9L._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC014", "name": "TONOR TW-820 Wireless Microphone System",
+                "description": "Sistema de micrófono inalámbrico con receptor, ideal para karaoke, reuniones y eventos en vivo.",
+                "originalPrice": 59.99, "rating": 4.1, "reviewsCount": 700, "category": "Micrófonos de solapa",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61Nl-t0+JmL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71hLg9n3uGL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC015", "name": "TONOR TC-777 USB Condenser Microphone",
+                "description": "Micrófono de condensador USB plug & play con trípode, perfecto para podcasting, grabaciones y chat.",
+                "originalPrice": 39.99, "rating": 4.4, "reviewsCount": 1500, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71Yf9+f-pLL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71nO4M0uC1L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71Q3d1F-7BL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "ACC010", "name": "Pop Filter for Microphones",
+                "description": "Filtro anti-pop de doble capa para micrófonos, mejora la calidad de la grabación eliminando ruidos de consonantes.",
+                "originalPrice": 9.99, "rating": 4.7, "reviewsCount": 2000, "category": "Accesorios",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61o-B2fB8UL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61iXN3z0KML._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "HP006", "name": "Sennheiser HD 206 Headphones",
+                "description": "Auriculares estéreo de alta calidad para escuchar música y monitoreo, con buena atenuación de ruido ambiental.",
+                "originalPrice": 34.95, "rating": 4.4, "reviewsCount": 8000, "category": "Audífonos",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71Y4Q9jL5BL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71j2x-xQ5FL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC016", "name": "Audio-Technica AT2020 Cardioid Condenser Microphone",
+                "description": "Micrófono de condensador de estudio ideal para grabación vocal y de instrumentos, con un patrón polar cardioide.",
+                "originalPrice": 99.00, "rating": 4.7, "reviewsCount": 10000, "category": "Micrófonos de estudio",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71y7J6n0vNL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/712W1X5L-9L._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC017", "name": "Rode Lavalier GO Professional Lavalier Microphone",
+                "description": "Micrófono de solapa profesional para una captura de audio discreta y de alta calidad, perfecto para transmisiones y presentaciones.",
+                "originalPrice": 79.00, "rating": 4.6, "reviewsCount": 2000, "category": "Micrófonos de solapa",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61r5L6Q-zFL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61v0M4A-PXL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "ACC011", "name": "Shock Mount for Condenser Microphones",
+                "description": "Soporte de choque universal para micrófonos de condensador, reduce el ruido de vibraciones y manipulación.",
+                "originalPrice": 18.50, "rating": 4.4, "reviewsCount": 500, "category": "Accesorios",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61TfD1Z4mQL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61xR0pQ-mML._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "HP007", "name": "Audio-Technica ATH-M20x Professional Monitor Headphones",
+                "description": "Auriculares de monitoreo profesional con diseño circumaural que ofrece un excelente aislamiento de sonido.",
+                "originalPrice": 49.00, "rating": 4.3, "reviewsCount": 7000, "category": "Audífonos",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71B4994-W6L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71G1M4L-TGL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "INT004", "name": "Steinberg UR22C USB Audio Interface",
+                "description": "Interfaz de audio USB 3.0 con 2 entradas/2 salidas, calidad de audio de 32 bits/192 kHz, y soporte MIDI.",
+                "originalPrice": 189.99, "rating": 4.8, "reviewsCount": 3000, "category": "Interfaces / Mixers",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61z95W5m1CL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/71N1+0+e7XL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC018", "name": "Zoom H1n Portable Recorder",
+                "description": "Grabadora de audio portátil estéreo compacta y fácil de usar, perfecta para músicos, periodistas y podcasters.",
+                "originalPrice": 99.99, "rating": 4.5, "reviewsCount": 4000, "category": "Micrófonos de solapa",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61kM5nK4VwL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/61V1oK9xTML._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "ACC012", "name": "USB-C to USB-A Adapter Cable",
+                "description": "Cable adaptador USB-C a USB-A para conectar dispositivos modernos a puertos USB estándar.",
+                "originalPrice": 7.50, "rating": 4.2, "reviewsCount": 900, "category": "Accesorios",
+                "images": [
+                    "https://placehold.co/600x400/cccccc/333333?text=Adaptador+USB-C+1",
+                    "https://placehold.co/600x400/cccccc/333333?text=Adaptador+USB-C+2"
+                ]
+            },
+            {
+                "id": "HP008", "name": "Bose QuietComfort 35 II Noise-Cancelling Headphones",
+                "description": "Auriculares con cancelación de ruido líderes en la industria para una experiencia auditiva inmersiva y sin distracciones.",
+                "originalPrice": 249.00, "rating": 4.7, "reviewsCount": 60000, "category": "Audífonos",
+                "images": [
+                    "https://m.media-amazon.com/images/I/71+R+z+k+3L._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/81u2H0Jq-SL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "MIC019", "name": "Rode VideoMic Go II Compact Shotgun Microphone",
+                "description": "Micrófono de escopeta compacto ideal para cámaras, smartphones y computadoras, con sonido direccional.",
+                "originalPrice": 99.00, "rating": 4.6, "reviewsCount": 1800, "category": "Micrófonos de solapa",
+                "images": [
+                    "https://m.media-amazon.com/images/I/61Nl-t0+JmL._AC_SL1500_.jpg",
+                    "https://m.media-amazon.com/images/I/611aE1h4NqL._AC_SL1500_.jpg"
+                ]
+            },
+            {
+                "id": "ACC013", "name": "Microphone Isolation Shield",
+                "description": "Escudo de aislamiento acústico plegable para micrófonos, reduce el ruido ambiental para grabaciones más limpias.",
+                "originalPrice": 65.00, "rating": 4.3, "reviewsCount": 400, "category": "Accesorios",
+                "images": [
+                    "https://placehold.co/600x400/cccccc/333333?text=Escudo+Aislamiento+1",
+                    "https://placehold.co/600x400/cccccc/333333?text=Escudo+Aislamiento+2"
+                ]
+            }
+        ];
+
+        // Función para calcular el precio según las reglas definidas
+        function calculatePrice(originalPrice) {
+            let finalPrice;
+            if (originalPrice <= 50) {
+                finalPrice = originalPrice * 2;
+            } else if (originalPrice <= 100) {
+                finalPrice = originalPrice * 1.7;
+            } else {
+                finalPrice = originalPrice * 1.4;
+            }
+            return parseFloat(finalPrice.toFixed(2)); // Retornar como número flotante
+        }
+
+        // Función para calcular la cantidad de reseñas multiplicando por 100
+        function calculateReviews(originalReviewsCount) {
+            return originalReviewsCount * 100;
+        }
+
+        // Función para generar el HTML de las estrellas de reseña
+        function getStarRatingHTML(rating) {
+            let starsHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                if (rating >= i) {
+                    starsHtml += `<svg class="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279L12 18.896l-7.416 3.816 1.48-8.279L.001 9.306l8.332-1.151L12 .587z"/></svg>`;
+                } else {
+                    starsHtml += `<svg class="w-4 h-4 text-gray-300 fill-current" viewBox="0 0 24 24"><path d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279L12 18.896l-7.416 3.816 1.48-8.279L.001 9.306l8.332-1.151L12 .587z"/></svg>`;
+                }
+            }
+            return starsHtml;
+        }
+
+        // Función para generar una descripción mejorada usando la API de Gemini
+        async function generateEnhancedDescription(productId, productName, currentDescription, buttonElement) {
+            buttonElement.disabled = true;
+            const originalText = buttonElement.textContent;
+            buttonElement.textContent = 'Generando...';
+            buttonElement.classList.add('opacity-50', 'cursor-not-allowed');
+
+            const prompt = `Genera una descripción concisa (no más de 80 palabras) y atractiva para un producto llamado '${productName}' que actualmente se describe como '${currentDescription}'. Enfócate en sus características principales y beneficios para el usuario, usando un tono profesional y persuasivo.`;
+
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            let retries = 0;
+            const MAX_RETRIES = 3;
+            const BASE_DELAY_MS = 1000;
+
+            while (retries < MAX_RETRIES) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        if (response.status === 429) {
+                            const delay = BASE_DELAY_MS * Math.pow(2, retries) + Math.random() * 100;
+                            console.warn(`Demasiadas solicitudes. Reintentando en ${delay / 1000}s...`);
+                            await new Promise(res => setTimeout(res, delay));
+                            retries++;
+                            continue;
+                        }
+                        throw new Error(`Error HTTP: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const newDescription = result.candidates[0].content.parts[0].text;
+
+                        const productCardElement = document.getElementById(`product-${productId}`);
+                        if (productCardElement) {
+                            const descriptionElement = productCardElement.querySelector('.product-description');
+                            if (descriptionElement) {
+                                descriptionElement.textContent = newDescription;
+                                const productIndex = currentProducts.findIndex(p => p.id === productId);
+                                if (productIndex !== -1) {
+                                    currentProducts[productIndex].description = newDescription;
+                                }
+                            }
+                        }
+                        break;
+                    } else {
+                        throw new Error('Respuesta de la API inesperada o contenido vacío.');
+                    }
+                } catch (error) {
+                    console.error('Error al generar descripción con Gemini API:', error);
+                    if (retries === MAX_RETRIES - 1) {
+                        showNotification(`No se pudo generar la descripción mejorada para ${productName}. Inténtalo de nuevo más tarde.`, 'error');
+                    }
+                    retries++;
+                    const delay = BASE_DELAY_MS * Math.pow(2, retries) + Math.random() * 100;
+                    await new Promise(res => setTimeout(res, delay));
+                }
+            }
+
+            buttonElement.disabled = false;
+            buttonElement.textContent = originalText;
+            buttonElement.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        // Función principal para renderizar un solo producto en una tarjeta
+        function renderProduct(product) {
+            const finalPrice = calculatePrice(product.originalPrice);
+            const totalReviews = calculateReviews(product.reviewsCount);
+
+            const productCard = document.createElement('div');
+            productCard.className = 'product-card bg-white rounded-lg overflow-hidden shadow-lg p-4 flex flex-col items-center text-center relative';
+            productCard.id = `product-${product.id}`;
+            productCard.setAttribute('data-category', product.category);
+
+            const imageGallery = document.createElement('div');
+            imageGallery.className = 'image-gallery w-full h-48 md:h-64 overflow-hidden rounded-md mb-4 relative';
+            imageGallery.dataset.currentImageIndex = 0;
+
+            const mainImage = document.createElement('img');
+            mainImage.src = product.images[0];
+            mainImage.alt = product.name;
+            mainImage.className = 'w-full h-full object-contain transition-all duration-300 transform hover:scale-105';
+            mainImage.onerror = function() { this.src = 'https://placehold.co/600x400/cccccc/333333?text=Imagen+No+Disponible'; };
+            imageGallery.appendChild(mainImage);
+
+            if (product.images.length > 1) {
+                const imageNav = document.createElement('div');
+                imageNav.className = 'absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 bg-black bg-opacity-50 p-1 rounded-full';
+                product.images.forEach((imgSrc, index) => {
+                    const dot = document.createElement('span');
+                    dot.className = `w-2 h-2 rounded-full cursor-pointer transition-colors duration-200 ${index === 0 ? 'bg-white' : 'bg-gray-400'}`;
+                    dot.onclick = (e) => {
+                        e.stopPropagation();
+                        mainImage.src = imgSrc;
+                        imageGallery.dataset.currentImageIndex = index;
+                        Array.from(imageNav.children).forEach((d, i) => {
+                            d.className = `w-2 h-2 rounded-full cursor-pointer transition-colors duration-200 ${i === index ? 'bg-white' : 'bg-gray-400'}`;
+                        });
+                    };
+                    imageNav.appendChild(dot);
+                });
+                imageGallery.appendChild(imageNav);
+
+                mainImage.onclick = () => {
+                    let currentIndex = parseInt(imageGallery.dataset.currentImageIndex);
+                    currentIndex = (currentIndex + 1) % product.images.length;
+                    mainImage.src = product.images[currentIndex];
+                    imageGallery.dataset.currentImageIndex = currentIndex;
+                    Array.from(imageNav.children).forEach((d, i) => {
+                        d.className = `w-2 h-2 rounded-full cursor-pointer transition-colors duration-200 ${i === currentIndex ? 'bg-white' : 'bg-gray-400'}`;
+                    });
+                };
+            }
+
+            const name = document.createElement('h3');
+            name.className = 'text-xl font-semibold text-slate-900 mb-2';
+            name.textContent = product.name;
+
+            const description = document.createElement('p');
+            description.className = 'product-description text-sm text-slate-600 mb-3 flex-grow';
+            description.textContent = product.description;
+
+            const generateDescriptionButton = document.createElement('button');
+            generateDescriptionButton.className = 'bg-purple-500 text-white px-3 py-1 text-sm rounded-lg hover:bg-purple-600 transition duration-200 mt-2 mb-3';
+            generateDescriptionButton.textContent = 'Generar Descripción ✨';
+            generateDescriptionButton.onclick = () => generateEnhancedDescription(product.id, product.name, product.description, generateDescriptionButton);
+
+            const price = document.createElement('p');
+            price.className = 'text-2xl font-bold text-purple-700 mb-2';
+            price.textContent = `$${finalPrice.toFixed(2)}`; // Formatear precio para mostrar
+
+            const reviewSection = document.createElement('div');
+            reviewSection.className = 'flex items-center justify-center mb-3 star-rating';
+            reviewSection.innerHTML = getStarRatingHTML(product.rating);
+            const reviewCountText = document.createElement('span');
+            reviewCountText.className = 'text-sm text-slate-500 ml-2';
+            reviewCountText.textContent = `${totalReviews.toLocaleString('es-ES')} reseñas`;
+            reviewSection.appendChild(reviewCountText);
+
+            // Botón "Añadir al Carrito"
+            const addToCartButton = document.createElement('button');
+            addToCartButton.className = 'bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-200 mt-3 w-full';
+            addToCartButton.textContent = 'Añadir al Carrito';
+            addToCartButton.onclick = () => addToCart(product);
+
+            productCard.appendChild(imageGallery);
+            productCard.appendChild(name);
+            productCard.appendChild(description);
+            productCard.appendChild(generateDescriptionButton);
+            productCard.appendChild(price);
+            productCard.appendChild(reviewSection);
+            productCard.appendChild(addToCartButton); // Añadir el botón del carrito
+
+            return productCard;
+        }
+
+        // Función para renderizar todos los productos en la cuadrícula, aplicando filtros de categoría
+        function renderProducts(productsToRender) {
+            const productGrid = document.getElementById('productGrid');
+            productGrid.innerHTML = '';
+            const noProductsMessage = document.getElementById('noProductsMessage');
+
+            if (productsToRender.length === 0) {
+                noProductsMessage.classList.remove('hidden');
+            } else {
+                noProductsMessage.classList.add('hidden');
+                productsToRender.forEach(product => {
+                    productGrid.appendChild(renderProduct(product));
+                });
+            }
+        }
+
+       // Manejador de eventos para los botones de categoría
+function handleCategoryClick(event) {
+    const category = event.target.dataset.category;
+    const buttons = document.querySelectorAll('.category-button');
+    buttons.forEach(button => button.classList.remove('active'));
+    event.target.classList.add('active');
+
+    let filteredProducts = [];
+    if (category === 'all') {
+        filteredProducts = currentProducts;
+    } else {
+        filteredProducts = currentProducts.filter(product => product.category === category);
+    }
+
+    renderProducts(filteredProducts);
+
+    // ⬇️ Esta línea asegura que el contenedor de productos se muestre desde arriba
+    const gridContainer = document.getElementById('productGrid');
+    if (gridContainer) {
+        gridContainer.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    }
+
+    // ⬇️ También llevamos el scroll general al top de la página si estás en escritorio
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+        // --- Lógica del Carrito (solo guardar y contador para esta página) ---
+
+        // Guarda el carrito en localStorage con una fecha de expiración
+        function saveCart() {
+            const expirationTime = new Date().getTime() + (CART_EXPIRATION_DAYS * 24 * 60 * 60 * 1000); // 2 semanas en milisegundos
+            const dataToStore = {
+                items: cartItems,
+                expiresAt: expirationTime
+            };
+            localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(dataToStore));
+            console.log('Carrito guardado:', dataToStore); // DEBUG: Verificar lo que se guarda
+            updateCartItemCount(); // Solo actualiza el contador en esta página
+        }
+
+        // Carga el carrito de localStorage y verifica la expiración
+        function loadCart() {
+            const storedData = localStorage.getItem(CART_STORAGE_KEY);
+            console.log('Datos del carrito en localStorage al cargar:', storedData); // DEBUG: Verificar lo que se carga
+            if (storedData) {
+                try {
+                    const data = JSON.parse(storedData);
+                    const now = new Date().getTime();
+                    if (data.expiresAt && now < data.expiresAt) {
+                        cartItems = data.items;
+                        console.log('Carrito cargado exitosamente:', cartItems); // DEBUG: Carrito cargado
+                    } else {
+                        // Carrito expirado, lo vaciamos
+                        cartItems = [];
+                        localStorage.removeItem(CART_STORAGE_KEY);
+                        showNotification('Tu carrito ha sido vaciado por inactividad (más de 2 semanas).', 'info');
+                        console.log('Carrito expirado y vaciado.'); // DEBUG: Carrito expirado
+                    }
+                } catch (e) {
+                    console.error("Error al parsear el carrito de localStorage:", e);
+                    cartItems = []; // Si hay un error, vaciar el carrito para evitar problemas
+                    localStorage.removeItem(CART_STORAGE_KEY);
+                    showNotification('Error al cargar el carrito. Se ha vaciado para evitar problemas.', 'error');
+                }
+            } else {
+                cartItems = [];
+                console.log('No hay datos de carrito en localStorage. Carrito inicializado vacío.'); // DEBUG: No hay datos
+            }
+            updateCartItemCount(); // Actualiza el contador al cargar
+        }
+
+        // Añade un producto al carrito
+        function addToCart(product) {
+            console.log('Intentando añadir producto al carrito:', product); // DEBUG: Producto a añadir
+            // Asegúrate de usar el precio calculado para el carrito
+            const itemPrice = calculatePrice(product.originalPrice);
+
+            const existingItem = cartItems.find(item => item.id === product.id);
+            if (existingItem) {
+                existingItem.quantity++;
+                console.log('Producto existente actualizado:', existingItem); // DEBUG: Producto existente
+            } else {
+                cartItems.push({
+                    id: product.id,
+                    name: product.name,
+                    price: itemPrice, // Usar el precio ya calculado
+                    image: product.images[0],
+                    quantity: 1,
+                    addedAt: new Date().getTime() // Fecha de adición para expiración
+                });
+                console.log('Nuevo producto añadido:', cartItems[cartItems.length - 1]); // DEBUG: Nuevo producto
+            }
+            saveCart();
+            showNotification(`${product.name} añadido al carrito.`, 'success');
+        }
+
+        // Solo actualiza el contador del carrito flotante
+        function updateCartItemCount() {
+            if (cartItemCountElem) {
+                const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+                cartItemCountElem.textContent = totalItems;
+                console.log('Contador del carrito actualizado a:', totalItems); // DEBUG: Contador
+            }
+        }
+
+        // Función para mostrar notificaciones temporales
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `fixed bottom-4 right-4 p-4 rounded-lg shadow-lg text-white z-50 transition-transform transform translate-y-full opacity-0 duration-300`;
+            if (type === 'success') {
+                notification.classList.add('bg-green-500');
+            } else if (type === 'error') {
+                notification.classList.add('bg-red-500');
+            } else {
+                notification.classList.add('bg-gray-700');
+            }
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('translate-y-full', 'opacity-0');
+                notification.classList.add('translate-y-0', 'opacity-100');
+            }, 100);
+
+            // Animate out and remove
+            setTimeout(() => {
+                notification.classList.remove('translate-y-0', 'opacity-100');
+                notification.classList.add('translate-y-full', 'opacity-0');
+                notification.addEventListener('transitionend', () => notification.remove());
+            }, 3000);
+        }
+
+        // Inicialización de la página cuando el DOM está completamente cargado
+        document.addEventListener('DOMContentLoaded', () => {
+            // Cargar productos del localStorage o usar ejemplos
+            const storedProducts = localStorage.getItem(PRODUCT_STORAGE_KEY);
+            if (storedProducts) {
+                try {
+                    currentProducts = JSON.parse(storedProducts);
+                } catch (e) {
+                    console.error("Error al cargar productos de localStorage, usando productos de ejemplo.", e);
+                    currentProducts = sampleProducts;
+                }
+            } else {
+                currentProducts = sampleProducts;
+            }
+            renderProducts(currentProducts);
+
+            // Activar el botón 'Todos' por defecto al cargar la página
+            document.querySelector('.categoria-btn[data-category="all"]').classList.add('active');
+
+            // Asignar manejadores de eventos a los botones de categoría
+            const categoryButtons = document.querySelectorAll('.categoria-btn');
+            categoryButtons.forEach(button => {
+                button.addEventListener('click', handleCategoryClick);
+            });
+
+            // Inicialización de la variable global del contador del carrito
+            cartItemCountElem = document.getElementById('cartItemCount');
+            
+            loadCart(); // Cargar el carrito al iniciar la página para actualizar el contador
+        });
+        
+        
+        document.addEventListener('DOMContentLoaded', () => {
+  // Selecciona todos los botones que tienen la clase 'categoria-btn'
+  const categoryButtons = document.querySelectorAll('.categoria-btn');
+
+  // Añade un 'event listener' a cada botón
+  categoryButtons.forEach(button => {
+    button.addEventListener('click', (event) => {
+      // 1. Quitar la clase 'active' de TODOS los botones
+      categoryButtons.forEach(btn => {
+        btn.classList.remove('active');
+      });
+
+      // 2. Agregar la clase 'active' SÓLO al botón que se ha clicado
+      event.target.classList.add('active');
+    });
+  });
+
+  // Opcional: Seleccionar el primer botón por defecto al cargar la página
+  if (categoryButtons.length > 0) {
+    categoryButtons[0].classList.add('active');
+  }
+});
+    </script>
 </body>
 </html>
+
+
